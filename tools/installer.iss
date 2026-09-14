@@ -4,7 +4,7 @@
 ; ==============================================================================
 
 #define MyAppName "last"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "zennnnnnn11"
 #define MyAppURL "https://github.com/zennnnnnn11/last"
 #define MyAppExeName "last.exe"

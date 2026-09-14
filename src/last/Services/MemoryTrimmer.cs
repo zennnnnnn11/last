@@ -9,22 +9,21 @@ namespace last.Services;
 ///     在主窗口收起至系统托盘时触发轻量级 GC 并通知 Windows 内存管理器将非活跃物理页置换至待机列表，
 ///     使应用在后台挂机时物理内存从 ~120MB 骤降至 ~15-25MB，把宝贵的物理内存让渡给前台游戏。
 /// </summary>
-internal static class MemoryTrimmer
+internal static partial class MemoryTrimmer
 {
     private const long GcCooldownMilliseconds = 30_000;
 
     private static long _lastFullGcTimestamp;
 
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr GetCurrentProcess();
+    [LibraryImport("kernel32.dll")]
+    private static partial IntPtr GetCurrentProcess();
 
-    [DllImport("psapi.dll", SetLastError = true)]
+    [LibraryImport("psapi.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool EmptyWorkingSet(IntPtr hProcess);
+    private static partial bool EmptyWorkingSet(IntPtr hProcess);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetProcessWorkingSetSize(
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static partial void SetProcessWorkingSetSize(
         IntPtr hProcess,
         nuint dwMinimumWorkingSetSize,
         nuint dwMaximumWorkingSetSize);

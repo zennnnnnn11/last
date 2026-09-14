@@ -138,10 +138,7 @@ public sealed class AutoPlayAgainService : IAutoPlayAgainService
                     if (_gameflowState.Phase == GameflowPhase.Matchmaking ||
                         _gameflowState.Phase == GameflowPhase.ReadyCheck ||
                         _gameflowState.Phase == GameflowPhase.ChampSelect)
-                    {
-                        matchSearchTriggered = true;
                         break;
-                    }
 
                     if (_gameflowState.Phase == GameflowPhase.InProgress ||
                         _gameflowState.Phase == GameflowPhase.Reconnect)

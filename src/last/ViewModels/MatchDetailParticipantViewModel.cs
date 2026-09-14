@@ -148,7 +148,7 @@ public sealed partial class MatchDetailParticipantViewModel : ObservableObject
     private void InitializeSlots(UnifiedParticipant participant)
     {
         // 7 个装备槽位（6 装备 + 1 饰品/特殊）
-        var items = participant.Items ?? [];
+        var items = participant.Items;
         for (var i = 0; i < 7; i++)
         {
             var itemId = i < items.Count ? items[i] : 0;
@@ -220,17 +220,14 @@ public sealed partial class MatchDetailParticipantViewModel : ObservableObject
             Dispatcher.UIThread.Post(() =>
             {
                 slot.Icon = bmp;
-                if (info != null)
-                {
-                    slot.Name = info.Name;
-                    slot.Desc = info.Desc;
-                    if (!string.IsNullOrWhiteSpace(info.BorderColorHex) &&
-                        Color.TryParse(info.BorderColorHex, out var bc))
-                        slot.BorderBrush = new SolidColorBrush(bc);
-                    if (!string.IsNullOrWhiteSpace(info.BackgroundColorHex) &&
-                        Color.TryParse(info.BackgroundColorHex, out var bgc))
-                        slot.BackgroundBrush = new SolidColorBrush(bgc);
-                }
+                slot.Name = info.Name;
+                slot.Desc = info.Desc;
+                if (!string.IsNullOrWhiteSpace(info.BorderColorHex) &&
+                    Color.TryParse(info.BorderColorHex, out var bc))
+                    slot.BorderBrush = new SolidColorBrush(bc);
+                if (!string.IsNullOrWhiteSpace(info.BackgroundColorHex) &&
+                    Color.TryParse(info.BackgroundColorHex, out var bgc))
+                    slot.BackgroundBrush = new SolidColorBrush(bgc);
             });
         }
 

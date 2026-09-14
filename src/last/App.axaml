@@ -4,8 +4,11 @@
              RequestedThemeVariant="Default">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- 全局统一字体资产：优先 MiSans，优雅回落至 Segoe UI Variable、Segoe UI、微软雅黑与系统无衬线字体 -->
-            <FontFamily x:Key="AppFontFamily">MiSans, Segoe UI Variable, Segoe UI, Microsoft YaHei UI, -apple-system, BlinkMacSystemFont, sans-serif</FontFamily>
+            <!-- 全局统一字体资产：内嵌 MiSans 精简字库，生僻字与符号优雅回退至 Segoe UI Variable、Segoe UI、微软雅黑与系统无衬线字体 -->
+            <FontFamily x:Key="AppFontFamily">avares://last/Assets/Fonts#MiSans, Segoe UI Variable, Segoe UI, Microsoft YaHei UI, -apple-system, BlinkMacSystemFont, sans-serif</FontFamily>
+
+            <!-- 通用矢量图标资产 -->
+            <StreamGeometry x:Key="IconRefresh">M12,4V1L8,5l4,4V6c3.31,0,6,2.69,6,6c0,1.01,-0.25,1.97,-0.7,2.8l1.46,1.46C19.54,14.77,20,13.45,20,12c0,-4.42,-3.58,-8,-8,-8zm0,14c-3.31,0,-6,-2.69,-6,-6c0,-1.01,0.25,-1.97,0.7,-2.8L5.24,7.74C4.46,9.23,4,10.55,4,12c0,4.42,3.58,8,8,8v3l4,-4l-4,-4v3z</StreamGeometry>
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://last/Themes/WindowActionCapsuleTheme.axaml" />

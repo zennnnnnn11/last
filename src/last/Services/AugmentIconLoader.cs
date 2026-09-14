@@ -74,7 +74,7 @@ public static class AugmentIconLoader
             }
 
         var info = coordinator.KiwiAugmentStaticData.GetAugmentInfo(augmentId);
-        if (info == null || string.IsNullOrWhiteSpace(info.IconUrl))
+        if (string.IsNullOrWhiteSpace(info.IconUrl))
             return null;
 
         try

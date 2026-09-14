@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,8 +39,6 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
     {
         _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
 
-        SelectedFilter = MatchModeFilter.All;
-
         _coordinator.Detector.StatusChanged += OnStatusChanged;
         _coordinator.Summoner.CurrentSummonerChanged += OnCurrentSummonerChanged;
         _coordinator.Gameflow.PhaseChanged += OnPhaseChanged;
@@ -55,6 +54,8 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
 
     public BulkObservableCollection<MatchHistoryItemViewModel> Matches { get; } = [];
 
+    [SuppressMessage("Performance", "CA1822:Mark members as static",
+        Justification = "Avalonia XAML binds to FilterOptions via DataContext instance")]
     public IReadOnlyList<MatchModeFilter> FilterOptions => MatchModeFilter.PresetFilters;
 
     [ObservableProperty]
@@ -67,13 +68,13 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
     [NotifyPropertyChangedFor(nameof(IsFilterSpecialSelected))]
     public partial MatchModeFilter SelectedFilter { get; set; } = MatchModeFilter.All;
 
-    public bool IsFilterAllSelected => SelectedFilter?.Key == "ALL";
-    public bool IsFilterRankedSoloSelected => SelectedFilter?.Key == "RANKED_SOLO";
-    public bool IsFilterRankedFlexSelected => SelectedFilter?.Key == "RANKED_FLEX";
-    public bool IsFilterNormalSelected => SelectedFilter?.Key == "NORMAL";
-    public bool IsFilterAramSelected => SelectedFilter?.Key == "ARAM";
-    public bool IsFilterArenaSelected => SelectedFilter?.Key == "ARENA";
-    public bool IsFilterSpecialSelected => SelectedFilter?.Key == "SPECIAL";
+    public bool IsFilterAllSelected => SelectedFilter.Key == "ALL";
+    public bool IsFilterRankedSoloSelected => SelectedFilter.Key == "RANKED_SOLO";
+    public bool IsFilterRankedFlexSelected => SelectedFilter.Key == "RANKED_FLEX";
+    public bool IsFilterNormalSelected => SelectedFilter.Key == "NORMAL";
+    public bool IsFilterAramSelected => SelectedFilter.Key == "ARAM";
+    public bool IsFilterArenaSelected => SelectedFilter.Key == "ARENA";
+    public bool IsFilterSpecialSelected => SelectedFilter.Key == "SPECIAL";
 
     [ObservableProperty] public partial bool IsLoading { get; set; }
 
@@ -211,6 +212,7 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
 
     partial void OnSelectedFilterChanged(MatchModeFilter value)
     {
+        _ = value;
         _ = LoadMatchesAsync();
     }
 

@@ -197,9 +197,9 @@ public sealed partial class PlayerRowViewModel : ObservableObject
         int championId,
         int spell1Id,
         int spell2Id,
-        string summonerName,
-        string tagLine,
-        string puuid,
+        string? summonerName,
+        string? tagLine,
+        string? puuid,
         bool isLocalPlayer,
         bool isEnemy = false)
     {

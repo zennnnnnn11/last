@@ -49,7 +49,7 @@ public sealed partial class MatchAugmentSlotViewModel : ObservableObject
 /// </summary>
 public sealed partial class MatchHistoryItemViewModel : ObservableObject
 {
-    private static readonly ConcurrentDictionary<long, MatchDetailWindow> _openWindows = new();
+    private static readonly ConcurrentDictionary<long, MatchDetailWindow> OpenWindows = new();
     private readonly ILcuConnectionCoordinator _coordinator;
     private readonly CancellationTokenSource _cts = new();
     private readonly string _localPuuid;
@@ -137,7 +137,7 @@ public sealed partial class MatchHistoryItemViewModel : ObservableObject
     [RelayCommand]
     public void OpenDetail()
     {
-        if (_openWindows.TryGetValue(GameId, out var existing))
+        if (OpenWindows.TryGetValue(GameId, out var existing))
         {
             if (existing.IsVisible)
             {
@@ -153,7 +153,7 @@ public sealed partial class MatchHistoryItemViewModel : ObservableObject
             {
             }
 
-            ((ICollection<KeyValuePair<long, MatchDetailWindow>>)_openWindows)
+            ((ICollection<KeyValuePair<long, MatchDetailWindow>>)OpenWindows)
                 .Remove(new KeyValuePair<long, MatchDetailWindow>(GameId, existing));
         }
 
@@ -162,12 +162,12 @@ public sealed partial class MatchHistoryItemViewModel : ObservableObject
         {
             DataContext = detailVm
         };
-        _openWindows[GameId] = window;
+        OpenWindows[GameId] = window;
         EventHandler? onClosed = null;
         onClosed = (_, _) =>
         {
             window.Closed -= onClosed;
-            ((ICollection<KeyValuePair<long, MatchDetailWindow>>)_openWindows)
+            ((ICollection<KeyValuePair<long, MatchDetailWindow>>)OpenWindows)
                 .Remove(new KeyValuePair<long, MatchDetailWindow>(GameId, window));
         };
         window.Closed += onClosed;
@@ -312,9 +312,9 @@ public sealed partial class MatchHistoryItemViewModel : ObservableObject
                         IBrush bgBrush = Brushes.Transparent;
                         try
                         {
-                            if (!string.IsNullOrWhiteSpace(info?.BorderColorHex))
+                            if (!string.IsNullOrWhiteSpace(info.BorderColorHex))
                                 borderBrush = new SolidColorBrush(Color.Parse(info.BorderColorHex));
-                            if (!string.IsNullOrWhiteSpace(info?.BackgroundColorHex))
+                            if (!string.IsNullOrWhiteSpace(info.BackgroundColorHex))
                                 bgBrush = new SolidColorBrush(Color.Parse(info.BackgroundColorHex));
                         }
                         catch
@@ -326,8 +326,8 @@ public sealed partial class MatchHistoryItemViewModel : ObservableObject
                             AugmentId = augId,
                             HasAugment = true,
                             Icon = i < augBitmaps.Count ? augBitmaps[i] : null,
-                            Name = info?.Name ?? $"强化 {augId}",
-                            Desc = info?.Desc ?? string.Empty,
+                            Name = info.Name,
+                            Desc = info.Desc,
                             BorderBrush = borderBrush,
                             BackgroundBrush = bgBrush
                         };

@@ -85,7 +85,7 @@ public static class LcuLockfileParser
                 if (!string.IsNullOrWhiteSpace(dir))
                 {
                     var creds = TryReadFromDirectory(dir);
-                    if (creds is not null && (expectedPid <= 0 || creds.Pid == expectedPid))
+                    if (creds is not null && creds.Pid == expectedPid)
                         return creds;
                 }
             }

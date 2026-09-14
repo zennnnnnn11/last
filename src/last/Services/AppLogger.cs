@@ -13,8 +13,6 @@ namespace last.Services;
 public static class AppLogger
 {
     private static readonly Lock Gate = new();
-    private static readonly string LogDirectory;
-    private static readonly string CurrentLogFilePath;
     private static StreamWriter? _writer;
     private static bool _initialized;
 
@@ -22,20 +20,19 @@ public static class AppLogger
     {
         try
         {
-            var baseDir = Path.Combine(
+            var logDir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "last",
                 "logs");
 
-            LogDirectory = baseDir;
-            Directory.CreateDirectory(LogDirectory);
+            Directory.CreateDirectory(logDir);
 
-            CurrentLogFilePath = Path.Combine(
-                LogDirectory,
+            var logFilePath = Path.Combine(
+                logDir,
                 $"app-{DateTime.Now:yyyyMMdd}.log");
 
             var stream = new FileStream(
-                CurrentLogFilePath,
+                logFilePath,
                 FileMode.Append,
                 FileAccess.Write,
                 FileShare.ReadWrite);
@@ -50,8 +47,6 @@ public static class AppLogger
         catch (Exception ex)
         {
             Trace.WriteLine($"[AppLogger] Initialization failed: {ex.Message}");
-            LogDirectory = string.Empty;
-            CurrentLogFilePath = string.Empty;
         }
     }
 

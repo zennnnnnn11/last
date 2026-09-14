@@ -222,12 +222,14 @@ public sealed class MatchHistoryService : IMatchHistoryService
                 while (rawIndex < maxRawScan && matchingGames.Count < count)
                 {
                     IReadOnlyList<UnifiedMatchSummary> batchSummaries = Array.Empty<UnifiedMatchSummary>();
+                    var currentRawIndex = rawIndex;
 
                     if (useSgp)
                     {
                         var sgpResult = await ExecuteWithAccessTokenRetryAsync(
                             token => _sgpClient.GetMatchHistorySummaryAsync(
-                                puuid, token, effectivePlatform, rawIndex, batchSize, null, null, cancellationToken),
+                                puuid, token, effectivePlatform, currentRawIndex, batchSize, null, null,
+                                cancellationToken),
                             cancellationToken).ConfigureAwait(false);
 
                         if (sgpResult?.Games != null && sgpResult.Games.Count > 0)
@@ -310,7 +312,7 @@ public sealed class MatchHistoryService : IMatchHistoryService
                 token => _sgpClient.GetGameSummaryAsync(gameId, token, effectivePlatform, cancellationToken),
                 cancellationToken).ConfigureAwait(false);
 
-            if (sgpSummary?.Json?.Participants != null && sgpSummary.Json.Participants.Count > 1)
+            if (sgpSummary?.Json.Participants != null && sgpSummary.Json.Participants.Count > 1)
             {
                 var item = new SgpGameItem(sgpSummary.Metadata, sgpSummary.Json);
                 var unified = MatchDataAdapter.SgpToUnified(item, targetPuuid);

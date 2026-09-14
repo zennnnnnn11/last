@@ -22,7 +22,6 @@ namespace last.ViewModels;
 public sealed partial class MatchDetailViewModel : ObservableObject
 {
     private readonly ILcuConnectionCoordinator _coordinator;
-    private readonly string _localPuuid;
 
     public MatchDetailViewModel(
         UnifiedMatchSummary match,
@@ -30,7 +29,6 @@ public sealed partial class MatchDetailViewModel : ObservableObject
         ILcuConnectionCoordinator coordinator)
     {
         _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
-        _localPuuid = localPuuid;
         ArgumentNullException.ThrowIfNull(match);
 
         GameId = match.GameId;
@@ -78,18 +76,15 @@ public sealed partial class MatchDetailViewModel : ObservableObject
     public MatchDetailTeamViewModel EnemyTeam { get; }
 
     // 选项卡切换 (0: 战况概览, 1: 伤害承伤, 2: 经济装备)
-    [ObservableProperty] public partial int SelectedTabIndex { get; set; } = 0;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsOverviewTab))]
+    [NotifyPropertyChangedFor(nameof(IsDamageTab))]
+    [NotifyPropertyChangedFor(nameof(IsEconomyTab))]
+    public partial int SelectedTabIndex { get; set; } = 0;
 
     public bool IsOverviewTab => SelectedTabIndex == 0;
     public bool IsDamageTab => SelectedTabIndex == 1;
     public bool IsEconomyTab => SelectedTabIndex == 2;
-
-    partial void OnSelectedTabIndexChanged(int value)
-    {
-        OnPropertyChanged(nameof(IsOverviewTab));
-        OnPropertyChanged(nameof(IsDamageTab));
-        OnPropertyChanged(nameof(IsEconomyTab));
-    }
 
     [RelayCommand]
     public void SelectTab(string? indexStr)

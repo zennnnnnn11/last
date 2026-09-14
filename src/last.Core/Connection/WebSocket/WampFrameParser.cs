@@ -150,7 +150,7 @@ public static class WampFrameParser
 
             return true;
 
-            Failed:
+        Failed:
             topic = null;
             uri = null;
             eventType = null;

@@ -286,17 +286,21 @@ public sealed class LcuWebSocketClient : ILcuWebSocketClient
         try
         {
             while (await reader.WaitToReadAsync(ct).ConfigureAwait(false))
-            while (reader.TryRead(out var frameBytes))
             {
-                if (ct.IsCancellationRequested)
-                    return;
+                while (reader.TryRead(out var frameBytes))
+                {
+                    if (ct.IsCancellationRequested)
+                        return;
 
-                if (WampFrameParser.TryParseEventFrame(frameBytes, out _, out var uri, out var eventType, out var data,
-                        out var doc))
-                    using (doc)
+                    if (WampFrameParser.TryParseEventFrame(frameBytes, out _, out var uri, out var eventType, out var data,
+                            out var doc))
                     {
-                        _eventBus.Publish(uri!, eventType!, data);
+                        using (doc)
+                        {
+                            _eventBus.Publish(uri!, eventType!, data);
+                        }
                     }
+                }
             }
         }
         catch (OperationCanceledException)
