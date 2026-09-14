@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -197,7 +196,8 @@ public class SegmentedAutomationSwitch : TemplatedControl
         }
 
         _thumb.Width = Math.Round(targetWidth, 1);
-        _thumb.RenderTransform = TransformOperations.Parse(
-            $"translate({targetX.ToString("0.##", CultureInfo.InvariantCulture)}px, 0px)");
+        var builder = TransformOperations.CreateBuilder(1);
+        builder.AppendTranslate(targetX, 0);
+        _thumb.RenderTransform = builder.Build();
     }
 }

@@ -30,6 +30,9 @@ public sealed class KiwiAugmentStaticDataService : IKiwiAugmentStaticDataService
         lock (_initLock)
         {
             if (_isInitialized) return Task.CompletedTask;
+            if (_initTask != null && _initTask.IsCompleted && !_isInitialized)
+                _initTask = null;
+
             _initTask ??= FetchAugmentDictionaryAsync(cancellationToken);
             return _initTask;
         }
@@ -116,6 +119,14 @@ public sealed class KiwiAugmentStaticDataService : IKiwiAugmentStaticDataService
         catch
         {
             // 失败时安全静默，后续通过 GetAugmentInfo 兜底降级
+        }
+        finally
+        {
+            if (!_isInitialized)
+                lock (_initLock)
+                {
+                    _initTask = null;
+                }
         }
     }
 }

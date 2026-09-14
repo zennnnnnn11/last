@@ -105,7 +105,7 @@ public sealed partial class MatchDetailViewModel : ObservableObject
 
         // 核心评分模型运行
         var champStatic = _coordinator.ChampionStaticData;
-        var champRolesMap = champStatic.GetAllChampions().ToDictionary(c => c.Id, c => c.Roles);
+        var champRolesMap = champStatic.GetRolesMap();
         var (mvpPuuid, svpPuuid, scores) = MatchScorer.EvaluateScores(
             match.Participants,
             match.QueueId,
@@ -177,6 +177,10 @@ public sealed partial class MatchDetailViewModel : ObservableObject
             IsBlueAdvantage = false;
             IsRedAdvantage = false;
         }
+
+        if (match.Participants.Count < 10)
+            // 列表摘要仅含单人数据，等待 LoadFullMatchAsync 异步拉取 10 人完整战况后再填充队伍成员，避免 1 人闪变为 10 人
+            return;
 
         // 更新队伍聚合统计
         AllyTeam.UpdateStats(allyKills, allyGold, allyDmg, isAllyWin);

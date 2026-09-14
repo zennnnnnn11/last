@@ -8,6 +8,7 @@ public interface IChampionStaticDataService : IDisposable
     string GetChampionName(int championId);
     string GetIconUri(int championId);
     IReadOnlyList<ChampionStaticInfo> GetAllChampions();
+    IReadOnlyDictionary<int, IReadOnlyList<string>> GetRolesMap();
     IReadOnlyList<ChampionStaticInfo> Search(string query);
 
     void UpdateFromLcu(IReadOnlyList<ChampionSimple> lcuChampions);

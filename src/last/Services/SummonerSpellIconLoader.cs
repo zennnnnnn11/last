@@ -77,7 +77,7 @@ public static class SummonerSpellIconLoader
                 if (localBytes is { Length: > 0 })
                 {
                     using var ms = new MemoryStream(localBytes);
-                    return Bitmap.DecodeToWidth(ms, 36);
+                    return Bitmap.DecodeToWidth(ms, 36, BitmapInterpolationMode.MediumQuality);
                 }
             }
             catch
@@ -98,7 +98,7 @@ public static class SummonerSpellIconLoader
                 if (cdnBytes is { Length: > 0 })
                 {
                     using var ms = new MemoryStream(cdnBytes);
-                    return Bitmap.DecodeToWidth(ms, 36);
+                    return Bitmap.DecodeToWidth(ms, 36, BitmapInterpolationMode.MediumQuality);
                 }
             }
         }

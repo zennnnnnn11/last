@@ -145,7 +145,16 @@ public sealed partial class MatchHistoryItemViewModel : ObservableObject
                 return;
             }
 
-            _openWindows.TryRemove(GameId, out _);
+            try
+            {
+                existing.Close();
+            }
+            catch
+            {
+            }
+
+            ((ICollection<KeyValuePair<long, MatchDetailWindow>>)_openWindows)
+                .Remove(new KeyValuePair<long, MatchDetailWindow>(GameId, existing));
         }
 
         var detailVm = new MatchDetailViewModel(MatchSummary, _localPuuid, _coordinator);
@@ -158,7 +167,8 @@ public sealed partial class MatchHistoryItemViewModel : ObservableObject
         onClosed = (_, _) =>
         {
             window.Closed -= onClosed;
-            _openWindows.TryRemove(GameId, out _);
+            ((ICollection<KeyValuePair<long, MatchDetailWindow>>)_openWindows)
+                .Remove(new KeyValuePair<long, MatchDetailWindow>(GameId, window));
         };
         window.Closed += onClosed;
 

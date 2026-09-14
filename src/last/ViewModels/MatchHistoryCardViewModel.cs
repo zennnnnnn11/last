@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +10,7 @@ using last.Core.Connection.Models;
 using last.Core.Connection.Services;
 using last.Core.MatchHistory.Models;
 using last.Core.State.Models;
+using last.Helpers;
 using last.Services;
 
 namespace last.ViewModels;
@@ -22,10 +22,12 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
 {
     private const int MaxLoadedMatches = 200;
     private readonly ILcuConnectionCoordinator _coordinator;
+    private readonly Lock _loadGate = new();
     private readonly HashSet<long> _seenGameIds = [];
     private string _currentPuuid = string.Empty;
     private bool _disposed;
     private bool _isLoadingMoreSync;
+    private long _lastRefreshTimestamp;
     private CancellationTokenSource? _loadCts;
     private CancellationTokenSource? _loadMoreCts;
     private string _localPuuid = string.Empty;
@@ -51,7 +53,7 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
         }
     }
 
-    public ObservableCollection<MatchHistoryItemViewModel> Matches { get; } = [];
+    public BulkObservableCollection<MatchHistoryItemViewModel> Matches { get; } = [];
 
     public IReadOnlyList<MatchModeFilter> FilterOptions => MatchModeFilter.PresetFilters;
 
@@ -101,17 +103,34 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
+        lock (_loadGate)
+        {
+            if (_disposed)
+                return;
 
-        _disposed = true;
-        _loadCts?.Cancel();
-        _loadCts?.Dispose();
-        _loadCts = null;
+            _disposed = true;
+            try
+            {
+                _loadCts?.Cancel();
+            }
+            catch
+            {
+            }
 
-        _loadMoreCts?.Cancel();
-        _loadMoreCts?.Dispose();
-        _loadMoreCts = null;
+            _loadCts?.Dispose();
+            _loadCts = null;
+
+            try
+            {
+                _loadMoreCts?.Cancel();
+            }
+            catch
+            {
+            }
+
+            _loadMoreCts?.Dispose();
+            _loadMoreCts = null;
+        }
 
         _coordinator.Detector.StatusChanged -= OnStatusChanged;
         _coordinator.Summoner.CurrentSummonerChanged -= OnCurrentSummonerChanged;
@@ -175,6 +194,11 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
     [RelayCommand]
     public async Task RefreshAsync()
     {
+        var now = Environment.TickCount64;
+        if (now - _lastRefreshTimestamp < 1200 || IsLoading)
+            return;
+
+        _lastRefreshTimestamp = now;
         await LoadMatchesAsync().ConfigureAwait(false);
     }
 
@@ -227,16 +251,37 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
             return;
         }
 
-        _loadCts?.Cancel();
-        _loadCts?.Dispose();
-        _loadCts = new CancellationTokenSource();
-        var token = _loadCts.Token;
+        CancellationToken token;
+        lock (_loadGate)
+        {
+            if (_disposed)
+                return;
 
-        _loadMoreCts?.Cancel();
-        _loadMoreCts?.Dispose();
-        _loadMoreCts = null;
-        _isLoadingMoreSync = false;
-        _serverOffset = 0;
+            try
+            {
+                _loadCts?.Cancel();
+            }
+            catch
+            {
+            }
+
+            _loadCts?.Dispose();
+            _loadCts = new CancellationTokenSource();
+            token = _loadCts.Token;
+
+            try
+            {
+                _loadMoreCts?.Cancel();
+            }
+            catch
+            {
+            }
+
+            _loadMoreCts?.Dispose();
+            _loadMoreCts = null;
+            _isLoadingMoreSync = false;
+            _serverOffset = 0;
+        }
 
         Dispatcher.UIThread.Post(() =>
         {
@@ -268,9 +313,12 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
                     return;
 
                 ClearMatches();
+                var toAdd = new List<MatchHistoryItemViewModel>(items.Count);
                 foreach (var item in items)
                     if (_seenGameIds.Add(item.GameId))
-                        Matches.Add(item);
+                        toAdd.Add(item);
+
+                Matches.AddRange(toAdd);
 
                 _serverOffset = summaries.Count;
                 HasMatches = Matches.Count > 0;
@@ -372,9 +420,10 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
                 if (_disposed) return;
 
                 var addedCount = 0;
+                var toAdd = new List<MatchHistoryItemViewModel>(items.Count);
                 foreach (var item in items)
                 {
-                    if (Matches.Count >= MaxLoadedMatches)
+                    if (Matches.Count + toAdd.Count >= MaxLoadedMatches)
                     {
                         HasMoreMatches = false;
                         break;
@@ -382,10 +431,13 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
 
                     if (_seenGameIds.Add(item.GameId))
                     {
-                        Matches.Add(item);
+                        toAdd.Add(item);
                         addedCount++;
                     }
                 }
+
+                if (toAdd.Count > 0)
+                    Matches.AddRange(toAdd);
 
                 if (Matches.Count >= MaxLoadedMatches || summaries.Count < 20 ||
                     (addedCount == 0 && summaries.Count == 0))
@@ -462,6 +514,17 @@ public sealed partial class MatchHistoryCardViewModel : ObservableObject, IDispo
         // 当游戏结束回到大厅或结算时，自动刷新战绩列表
         if (newPhase is GameflowPhase.EndOfGame or GameflowPhase.WaitingForStats or GameflowPhase.Lobby &&
             oldPhase is GameflowPhase.InProgress or GameflowPhase.GameStart)
-            _ = Task.Delay(2000).ContinueWith(_ => LoadMatchesAsync());
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(2000).ConfigureAwait(false);
+                    await LoadMatchesAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Warn($"Failed to auto-refresh matches on phase change: {ex.Message}");
+                }
+            });
     }
 }

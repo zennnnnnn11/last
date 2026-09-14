@@ -15,7 +15,7 @@ public sealed record MatchModeFilter(
     public static readonly MatchModeFilter RankedSolo = new("RANKED_SOLO", "单双排位", [420]);
     public static readonly MatchModeFilter RankedFlex = new("RANKED_FLEX", "灵活排位", [440]);
     public static readonly MatchModeFilter Normal = new("NORMAL", "匹配模式", [430, 490, 400], ["CLASSIC"]);
-    public static readonly MatchModeFilter Aram = new("ARAM", "海克斯大乱斗", [2400, 450], ["ARAM"]);
+    public static readonly MatchModeFilter Aram = new("ARAM", "极地大乱斗", [2400, 450], ["ARAM"]);
     public static readonly MatchModeFilter Arena = new("ARENA", "斗魂竞技场", [1700, 1710], ["CHERRY"]);
 
     public static readonly MatchModeFilter Special = new("SPECIAL", "轮换模式", [900, 1010, 1020, 1300, 1900],

@@ -182,6 +182,9 @@ public sealed class ChampionStaticDataService : IChampionStaticDataService
     private readonly IGtimgHeroClient? _gtimgClient;
     private readonly Lock _lock = new();
 
+    private volatile IReadOnlyDictionary<int, IReadOnlyList<string>> _cachedRolesMap =
+        new Dictionary<int, IReadOnlyList<string>>();
+
     private Dictionary<int, ChampionStaticInfo> _champions = [];
     private int _isInitializing;
 
@@ -223,6 +226,11 @@ public sealed class ChampionStaticDataService : IChampionStaticDataService
         {
             return _champions.Values.OrderBy(c => c.Id).ToList();
         }
+    }
+
+    public IReadOnlyDictionary<int, IReadOnlyList<string>> GetRolesMap()
+    {
+        return _cachedRolesMap;
     }
 
     public IReadOnlyList<ChampionStaticInfo> Search(string query)
@@ -308,6 +316,7 @@ public sealed class ChampionStaticDataService : IChampionStaticDataService
             }
 
             _champions = updated;
+            _cachedRolesMap = updated.ToDictionary(c => c.Key, c => c.Value.Roles);
         }
     }
 
@@ -348,6 +357,7 @@ public sealed class ChampionStaticDataService : IChampionStaticDataService
             }
 
             _champions = updated;
+            _cachedRolesMap = updated.ToDictionary(c => c.Key, c => c.Value.Roles);
         }
     }
 

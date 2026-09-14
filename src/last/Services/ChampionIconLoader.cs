@@ -75,7 +75,7 @@ public static class ChampionIconLoader
             if (bytes is { Length: > 0 })
             {
                 using var ms = new MemoryStream(bytes);
-                return Bitmap.DecodeToWidth(ms, 80);
+                return Bitmap.DecodeToWidth(ms, 80, BitmapInterpolationMode.MediumQuality);
             }
         }
         catch
@@ -96,7 +96,7 @@ public static class ChampionIconLoader
                 if (cdnBytes is { Length: > 0 })
                 {
                     using var ms = new MemoryStream(cdnBytes);
-                    return Bitmap.DecodeToWidth(ms, 80);
+                    return Bitmap.DecodeToWidth(ms, 80, BitmapInterpolationMode.MediumQuality);
                 }
             }
         }

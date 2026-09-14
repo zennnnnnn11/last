@@ -137,7 +137,7 @@ public sealed partial class ProfileHeaderViewModel : ObservableObject, IDisposab
             if (bytes is { Length: > 0 } && !ct.IsCancellationRequested)
             {
                 using var ms = new MemoryStream(bytes);
-                var bitmap = Bitmap.DecodeToWidth(ms, 80);
+                var bitmap = Bitmap.DecodeToWidth(ms, 80, BitmapInterpolationMode.MediumQuality);
 
                 Dispatcher.UIThread.Post(() =>
                 {
@@ -147,9 +147,11 @@ public sealed partial class ProfileHeaderViewModel : ObservableObject, IDisposab
                         return;
                     }
 
-                    AvatarBitmap?.Dispose();
+                    var oldBitmap = AvatarBitmap;
                     AvatarBitmap = bitmap;
                     HasAvatar = true;
+                    if (oldBitmap is not null)
+                        Dispatcher.UIThread.Post(() => oldBitmap.Dispose(), DispatcherPriority.Background);
                 });
             }
         }
@@ -169,8 +171,10 @@ public sealed partial class ProfileHeaderViewModel : ObservableObject, IDisposab
         _avatarCts?.Dispose();
         _avatarCts = null;
 
-        AvatarBitmap?.Dispose();
+        var oldBitmap = AvatarBitmap;
         AvatarBitmap = null;
         HasAvatar = false;
+        if (oldBitmap is not null)
+            Dispatcher.UIThread.Post(() => oldBitmap.Dispose(), DispatcherPriority.Background);
     }
 }

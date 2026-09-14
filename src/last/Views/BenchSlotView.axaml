@@ -21,23 +21,21 @@
             </Setter>
         </Style>
 
-        <!-- 常态基准：平整静止态与底蕴微阴影 -->
+        <!-- 常态基准：平整静止态与底蕴微边框（常态不绘制离屏阴影通道） -->
         <Style Selector="Border.SlotFrame">
             <Setter Property="RenderTransform" Value="none" />
-            <Setter Property="BoxShadow" Value="0 1 2 0 #08000000" />
         </Style>
 
-        <!-- 鼠标悬浮时高亮边框、轻柔微浮起 1.2px、微放大 1.8% 并散开漫反射柔和微光晕（仅当有英雄时） -->
+        <!-- 鼠标悬浮时高亮边框、轻柔微浮起 1.2px、微放大 1.8% 并散开单层柔和微阴影（仅当有英雄时） -->
         <Style Selector="Button.BenchSlotBtn:pointerover Border.SlotFrame">
             <Setter Property="BorderBrush" Value="{DynamicResource BenchSlotHoverBorderBrush}" />
             <Setter Property="RenderTransform" Value="translateY(-1.2px) scale(1.018)" />
-            <Setter Property="BoxShadow" Value="0 6 14 0 #22000000, 0 2 4 0 #0E000000" />
+            <Setter Property="BoxShadow" Value="0 3 8 0 #18000000" />
         </Style>
 
         <!-- 鼠标按下时的即时轻微回弹反馈 -->
         <Style Selector="Button.BenchSlotBtn:pressed Border.SlotFrame">
             <Setter Property="RenderTransform" Value="scale(0.96)" />
-            <Setter Property="BoxShadow" Value="0 1 2 0 #0A000000" />
         </Style>
     </UserControl.Styles>
 
@@ -147,7 +145,6 @@
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.24"
                                                    Easing="{StaticResource FluentEase}" />
-                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.24" Easing="{StaticResource FluentEase}" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.24" Easing="{StaticResource FluentEase}" />
                 </Transitions>
             </Border.Transitions>

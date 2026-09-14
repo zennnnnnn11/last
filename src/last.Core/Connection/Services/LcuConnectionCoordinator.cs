@@ -296,56 +296,62 @@ public sealed class LcuConnectionCoordinator : ILcuConnectionCoordinator
 
     private void OnDetectorCredentialsChanged(LcuCredentials? credentials)
     {
-        _ = Task.Run(async () =>
+        _ = HandleCredentialsChangedAsync(credentials);
+    }
+
+    private async Task HandleCredentialsChangedAsync(LcuCredentials? credentials)
+    {
+        try
         {
-            try
+            if (credentials is not null)
             {
-                if (credentials is not null)
-                {
-                    CancelScheduledReconnect();
-                    MatchHistory.ActivePlatformId = credentials.PlatformId;
-                    _restClient.Configure(credentials);
+                CancelScheduledReconnect();
+                MatchHistory.ActivePlatformId = credentials.PlatformId;
+                _restClient.Configure(credentials);
 
-                    var wsTask = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await WebSocketClient.ConnectAsync(credentials).ConfigureAwait(false);
-                        }
-                        catch
-                        {
-                            ScheduleWebSocketReconnect();
-                        }
-                    });
+                var wsTask = ConnectWebSocketSafelyAsync(credentials);
+                var initStateTask = InitializeStateSafelyAsync();
 
-                    var initStateTask = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await StateCoordinator.InitializeAsync().ConfigureAwait(false);
-                            _ = ItemStaticData.InitializeAsync();
-                            _ = ChampionStaticData.InitializeAsync();
-                        }
-                        catch
-                        {
-                        }
-                    });
-
-                    await Task.WhenAll(wsTask, initStateTask).ConfigureAwait(false);
-                }
-                else
-                {
-                    CancelScheduledReconnect();
-                    MatchHistory.ActivePlatformId = null;
-                    StateCoordinator.Reset();
-                    _restClient.Reset();
-                    await WebSocketClient.DisconnectAsync().ConfigureAwait(false);
-                }
+                await Task.WhenAll(wsTask, initStateTask).ConfigureAwait(false);
             }
-            catch
+            else
             {
+                CancelScheduledReconnect();
+                MatchHistory.ActivePlatformId = null;
+                StateCoordinator.Reset();
+                _restClient.Reset();
+                await WebSocketClient.DisconnectAsync().ConfigureAwait(false);
             }
-        });
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"[LcuConnectionCoordinator] Credentials update error: {ex.Message}");
+        }
+    }
+
+    private async Task ConnectWebSocketSafelyAsync(LcuCredentials credentials)
+    {
+        try
+        {
+            await WebSocketClient.ConnectAsync(credentials).ConfigureAwait(false);
+        }
+        catch
+        {
+            ScheduleWebSocketReconnect();
+        }
+    }
+
+    private async Task InitializeStateSafelyAsync()
+    {
+        try
+        {
+            await StateCoordinator.InitializeAsync().ConfigureAwait(false);
+            _ = ItemStaticData.InitializeAsync();
+            _ = ChampionStaticData.InitializeAsync();
+        }
+        catch
+        {
+        }
     }
 
     private void OnDetectorStatusChanged(ClientConnectionStatus status)

@@ -86,7 +86,7 @@ public static class AugmentIconLoader
             if (bytes is { Length: > 0 })
             {
                 using var ms = new MemoryStream(bytes);
-                return Bitmap.DecodeToWidth(ms, 48);
+                return Bitmap.DecodeToWidth(ms, 48, BitmapInterpolationMode.MediumQuality);
             }
         }
         catch

@@ -14,6 +14,7 @@ public sealed class LeagueClientDetector : ILeagueClientDetector
     public const string TargetProcessName = "LeagueClientUx";
 
     public static readonly TimeSpan DefaultPollInterval = TimeSpan.FromSeconds(2);
+    public static readonly TimeSpan IdlePollInterval = TimeSpan.FromSeconds(5);
     public static readonly TimeSpan LongPollInterval = TimeSpan.FromSeconds(60);
     public static readonly TimeSpan AccessDeniedPollInterval = TimeSpan.FromSeconds(10);
 
@@ -25,6 +26,7 @@ public sealed class LeagueClientDetector : ILeagueClientDetector
     private readonly SemaphoreSlim _scanGate = new(1, 1);
     private CancellationTokenSource? _cts;
 
+    private int _disconnectedConsecutiveScans;
     private int _noCommandLineCount;
     private Task? _pollLoopTask;
     private AutoResetEvent? _processWaitEvent;
@@ -213,6 +215,7 @@ public sealed class LeagueClientDetector : ILeagueClientDetector
         if (pids.Count == 0)
         {
             _noCommandLineCount = 0;
+            _disconnectedConsecutiveScans++;
             UnwatchProcessExit();
 
             if (IsManuallyDisconnected)
@@ -223,8 +226,10 @@ public sealed class LeagueClientDetector : ILeagueClientDetector
                 CurrentCredentials = null;
                 UpdateStatus(ClientConnectionStatus.Disconnected);
                 CredentialsChanged?.Invoke(null);
-                AdjustTimerInterval(DefaultPollInterval);
             }
+
+            // 当连续未发现客户端进程（空闲态挂机）时，自适应退避至 5 秒轮询，消除高频全进程枚举空转
+            AdjustTimerInterval(_disconnectedConsecutiveScans >= 3 ? IdlePollInterval : DefaultPollInterval);
 
             var disconnectedInfo = new ProcessScanDiagnosticInfo(
                 ClientConnectionStatus.Disconnected,
@@ -235,6 +240,8 @@ public sealed class LeagueClientDetector : ILeagueClientDetector
             PublishDiagnostic(disconnectedInfo);
             return disconnectedInfo;
         }
+
+        _disconnectedConsecutiveScans = 0;
 
         if (pids.Count > 1)
         {

@@ -76,7 +76,7 @@ public static class ItemIconLoader
             if (bytes is { Length: > 0 })
             {
                 using var ms = new MemoryStream(bytes);
-                return Bitmap.DecodeToWidth(ms, 48);
+                return Bitmap.DecodeToWidth(ms, 48, BitmapInterpolationMode.MediumQuality);
             }
         }
         catch
@@ -100,7 +100,7 @@ public static class ItemIconLoader
                 if (cdnBytes is { Length: > 0 })
                 {
                     using var ms = new MemoryStream(cdnBytes);
-                    return Bitmap.DecodeToWidth(ms, 48);
+                    return Bitmap.DecodeToWidth(ms, 48, BitmapInterpolationMode.MediumQuality);
                 }
             }
         }

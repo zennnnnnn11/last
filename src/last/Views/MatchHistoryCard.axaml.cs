@@ -1,7 +1,6 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using last.Helpers;
@@ -23,11 +22,6 @@ public partial class MatchHistoryCard : UserControl
             ScrollViewer.ScrollChangedEvent,
             OnMatchListScrollChanged,
             RoutingStrategies.Bubble);
-        MatchListBox.AddHandler(
-            PointerWheelChangedEvent,
-            OnPointerWheelChanged,
-            RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
-            true);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -36,7 +30,6 @@ public partial class MatchHistoryCard : UserControl
 
         MatchListBox.Loaded -= OnListBoxLoaded;
         MatchListBox.RemoveHandler(ScrollViewer.ScrollChangedEvent, OnMatchListScrollChanged);
-        MatchListBox.RemoveHandler(PointerWheelChangedEvent, OnPointerWheelChanged);
 
         if (_scrollViewer != null)
         {
@@ -96,11 +89,6 @@ public partial class MatchHistoryCard : UserControl
     {
         if (e.Property == ScrollViewer.OffsetProperty || e.Property == ScrollViewer.ExtentProperty)
             CheckAndTriggerLoadMore();
-    }
-
-    private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
-    {
-        if (e.Delta.Y < 0) CheckAndTriggerLoadMore();
     }
 
     private void OnMatchListScrollChanged(object? sender, ScrollChangedEventArgs e)

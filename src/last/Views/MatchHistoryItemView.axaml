@@ -36,6 +36,7 @@
             <Border Grid.Column="0"
                     Width="3" Height="32"
                     CornerRadius="1.5"
+                    IsHitTestVisible="False"
                     VerticalAlignment="Center">
                 <Panel>
                     <!-- 胜利：薄荷绿微发光 -->
@@ -62,6 +63,7 @@
                     Background="{DynamicResource BenchSlotBgBrush}"
                     BorderBrush="{DynamicResource BenchSlotBorderBrush}"
                     BorderThickness="1"
+                    IsHitTestVisible="False"
                     VerticalAlignment="Center">
                 <Panel>
                     <Image Source="{Binding ChampionAvatar}"
@@ -78,6 +80,7 @@
             <Grid Grid.Column="4"
                   Width="90"
                   RowDefinitions="Auto, Auto"
+                  IsHitTestVisible="False"
                   VerticalAlignment="Center">
                 <!-- 上行：KDA 数字 (K / D / A，死亡数字标红) -->
                 <StackPanel Grid.Row="0"
@@ -125,7 +128,6 @@
                     <TextBlock Text="·"
                                FontSize="9.5"
                                Foreground="{DynamicResource TextTertiaryBrush}"
-                               Opacity="0.5"
                                VerticalAlignment="Center" />
                     <TextBlock Text="{Binding DamageText}"
                                FontSize="9.5"
@@ -160,23 +162,22 @@
                                 <Image Source="{Binding Icon}" Stretch="UniformToFill" />
                             </Border>
 
-                            <!-- 空装备槽：优雅半透明线框，弱化缺牙突兀感 -->
+                            <!-- 空装备槽：优雅微弱线框，弱化缺牙突兀感 -->
                             <Border CornerRadius="3"
                                     Background="{DynamicResource SurfaceSubtleBrush}"
                                     BorderBrush="{DynamicResource SurfaceStrokeBrush}"
                                     BorderThickness="1"
-                                    Opacity="0.3"
                                     IsVisible="{Binding !HasItem}" />
                         </Panel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- 装备与符文间的微细半透明垂直分隔线 -->
+            <!-- 装备与符文间的微细垂直分隔线 -->
             <Border Grid.Column="7"
                     Width="1" Height="20"
                     Background="{DynamicResource SurfaceStrokeBrush}"
-                    Opacity="0.5"
+                    IsHitTestVisible="False"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center" />
 
@@ -202,8 +203,7 @@
                             ToolTip.ShowDelay="150">
                         <Panel>
                             <Image Source="{Binding Spell1Icon}" Stretch="UniformToFill" />
-                            <Border Background="{DynamicResource AvatarPlaceholderBrush}"
-                                    Opacity="0.15"
+                            <Border Background="{DynamicResource SurfaceSubtleBrush}"
                                     IsVisible="{Binding Spell1Icon, Converter={x:Static ObjectConverters.IsNull}}" />
                         </Panel>
                     </Border>
@@ -218,8 +218,7 @@
                             ToolTip.ShowDelay="150">
                         <Panel>
                             <Image Source="{Binding Spell2Icon}" Stretch="UniformToFill" />
-                            <Border Background="{DynamicResource AvatarPlaceholderBrush}"
-                                    Opacity="0.15"
+                            <Border Background="{DynamicResource SurfaceSubtleBrush}"
                                     IsVisible="{Binding Spell2Icon, Converter={x:Static ObjectConverters.IsNull}}" />
                         </Panel>
                     </Border>
@@ -328,6 +327,7 @@
                         Spacing="2"
                         Margin="0,0,12,0"
                         HorizontalAlignment="Right"
+                        IsHitTestVisible="False"
                         VerticalAlignment="Center">
                 <!-- 时长 (如 21:22) -->
                 <TextBlock Text="{Binding DurationText}"

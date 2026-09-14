@@ -26,9 +26,11 @@ public static class MatchDataAdapter
             ? new[] { stats.Item0, stats.Item1, stats.Item2, stats.Item3, stats.Item4, stats.Item5, stats.Item6 }
             : Array.Empty<int>();
 
+        var identityMap = identities.DistinctBy(i => i.ParticipantId).ToDictionary(i => i.ParticipantId);
+
         var unifiedParticipants = participants.Select(p =>
         {
-            var identity = identities.FirstOrDefault(i => i.ParticipantId == p.ParticipantId);
+            var identity = identityMap.GetValueOrDefault(p.ParticipantId);
             var pStats = p.Stats;
             var name = identity != null
                 ? !string.IsNullOrWhiteSpace(identity.Player.GameName)

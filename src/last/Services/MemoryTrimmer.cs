@@ -11,6 +11,10 @@ namespace last.Services;
 /// </summary>
 internal static class MemoryTrimmer
 {
+    private const long GcCooldownMilliseconds = 30_000;
+
+    private static long _lastFullGcTimestamp;
+
     [DllImport("kernel32.dll")]
     private static extern IntPtr GetCurrentProcess();
 
@@ -35,9 +39,14 @@ internal static class MemoryTrimmer
 
         try
         {
-            // 注意：当 GCCollectionMode 为 Aggressive 时，.NET 运行时强制要求 blocking 必须为 true，否则会抛出 ArgumentException
-            GC.Collect(2, GCCollectionMode.Aggressive, true, true);
-            GC.WaitForPendingFinalizers();
+            var now = Environment.TickCount64;
+            // 节流保护：30秒内不重复执行全量阻塞式压缩 GC，避免频繁切换托盘导致密集 STW 停顿
+            if (now - _lastFullGcTimestamp >= GcCooldownMilliseconds)
+            {
+                _lastFullGcTimestamp = now;
+                GC.Collect(2, GCCollectionMode.Aggressive, true, true);
+                GC.WaitForPendingFinalizers();
+            }
 
             var processHandle = GetCurrentProcess();
 

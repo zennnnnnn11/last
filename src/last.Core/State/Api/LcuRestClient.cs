@@ -18,7 +18,8 @@ public sealed class LcuRestClient : ILcuRestClient
         TypeInfoResolver = LcuJsonSerializerContext.Default
     };
 
-    private static readonly SemaphoreSlim RequestGate = new(6, 6);
+    private static readonly SemaphoreSlim ApiRequestGate = new(8, 8);
+    private static readonly SemaphoreSlim AssetRequestGate = new(24, 24);
 
     private readonly HttpClient? _externalClient;
 
@@ -78,7 +79,7 @@ public sealed class LcuRestClient : ILcuRestClient
         if (client is null)
             return default;
 
-        await RequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await ApiRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -144,7 +145,7 @@ public sealed class LcuRestClient : ILcuRestClient
         }
         finally
         {
-            RequestGate.Release();
+            ApiRequestGate.Release();
         }
     }
 
@@ -156,7 +157,7 @@ public sealed class LcuRestClient : ILcuRestClient
         if (client is null)
             return null;
 
-        await RequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await AssetRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -202,7 +203,7 @@ public sealed class LcuRestClient : ILcuRestClient
         }
         finally
         {
-            RequestGate.Release();
+            AssetRequestGate.Release();
         }
     }
 
@@ -214,7 +215,7 @@ public sealed class LcuRestClient : ILcuRestClient
         if (client is null)
             return false;
 
-        await RequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await ApiRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             string json;
@@ -271,7 +272,7 @@ public sealed class LcuRestClient : ILcuRestClient
         }
         finally
         {
-            RequestGate.Release();
+            ApiRequestGate.Release();
         }
     }
 
@@ -283,7 +284,7 @@ public sealed class LcuRestClient : ILcuRestClient
         if (client is null)
             return false;
 
-        await RequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await ApiRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             string json;
@@ -340,7 +341,7 @@ public sealed class LcuRestClient : ILcuRestClient
         }
         finally
         {
-            RequestGate.Release();
+            ApiRequestGate.Release();
         }
     }
 
