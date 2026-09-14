@@ -1,0 +1,213 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:last.Controls">
+
+    <!-- Linear 丝滑近临界物理缓动：高响应、无多余回弹，契合 240ms 交互区间 -->
+    <SpringEasing x:Key="LinearSilkySpringEase" Mass="1.1" Stiffness="115.0" Damping="22.0" />
+
+    <!-- Linear 标志性三次方缓降曲线 (贝塞尔 0.16, 1.0, 0.3, 1.0) -->
+    <SplineEasing x:Key="LinearSilkyEase" X1="0.16" Y1="1.0" X2="0.3" Y2="1.0" />
+
+    <!-- 浅色 Linear 与 暗色双模调色字典 -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="SegmentedTrackBackgroundBrush" Color="#16181D" />
+            <SolidColorBrush x:Key="SegmentedTrackBorderBrush" Color="#262833" />
+            <SolidColorBrush x:Key="SegmentedThumbBackgroundBrush" Color="#222530" />
+            <SolidColorBrush x:Key="SegmentedThumbBorderBrush" Color="#383C4D" />
+            <BoxShadows x:Key="SegmentedThumbBoxShadow">0 2 8 0 #50000000</BoxShadows>
+            <SolidColorBrush x:Key="SegmentedActiveForegroundBrush" Color="#F3F4F6" />
+            <SolidColorBrush x:Key="SegmentedInactiveForegroundBrush" Color="#858997" />
+            <SolidColorBrush x:Key="SegmentedInactiveHoverForegroundBrush" Color="#D1D5DB" />
+            <SolidColorBrush x:Key="SegmentedDividerBrush" Color="#2E3240" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+            <!-- Linear 浅色规范：凹陷冷灰底轨，纯白悬浮滑块，锋利 1px 微边框 -->
+            <SolidColorBrush x:Key="SegmentedTrackBackgroundBrush" Color="#EBEDF2" />
+            <SolidColorBrush x:Key="SegmentedTrackBorderBrush" Color="#DCE0E6" />
+            <SolidColorBrush x:Key="SegmentedThumbBackgroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="SegmentedThumbBorderBrush" Color="#D0D5DD" />
+            <BoxShadows x:Key="SegmentedThumbBoxShadow">0 1 3 0 #12000000, 0 4 10 0 #0C000000</BoxShadows>
+            <SolidColorBrush x:Key="SegmentedActiveForegroundBrush" Color="#111827" />
+            <SolidColorBrush x:Key="SegmentedInactiveForegroundBrush" Color="#64748B" />
+            <SolidColorBrush x:Key="SegmentedInactiveHoverForegroundBrush" Color="#1E293B" />
+            <SolidColorBrush x:Key="SegmentedDividerBrush" Color="#E2E8F0" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- 控件主题定义 -->
+    <ControlTheme x:Key="{x:Type c:SegmentedAutomationSwitch}" TargetType="c:SegmentedAutomationSwitch">
+        <Setter Property="Height" Value="34" />
+        <Setter Property="CornerRadius" Value="7" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border x:Name="PART_Track"
+                        Height="34"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{DynamicResource SegmentedTrackBackgroundBrush}"
+                        BorderBrush="{DynamicResource SegmentedTrackBorderBrush}"
+                        BorderThickness="1"
+                        ClipToBounds="False">
+                    <Panel>
+                        <!-- 悬浮白色滑块（带有丝滑物理位移与横向拉伸，240ms 黄金响应） -->
+                        <Border x:Name="PART_Thumb"
+                                Height="28"
+                                Width="96"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                RenderTransform="translate(2.5px, 0px)"
+                                CornerRadius="5.5"
+                                Background="{DynamicResource SegmentedThumbBackgroundBrush}"
+                                BorderBrush="{DynamicResource SegmentedThumbBorderBrush}"
+                                BorderThickness="1"
+                                BoxShadow="{DynamicResource SegmentedThumbBoxShadow}"
+                                ClipToBounds="False">
+                            <Border.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Width"
+                                                      Duration="0:0:0.24"
+                                                      Easing="{StaticResource LinearSilkySpringEase}" />
+                                    <TransformOperationsTransition Property="RenderTransform"
+                                                                   Duration="0:0:0.24"
+                                                                   Easing="{StaticResource LinearSilkySpringEase}" />
+                                </Transitions>
+                            </Border.Transitions>
+                        </Border>
+
+                        <!-- 三段选项文字与点击区域（置于滑块上层） -->
+                        <Grid ColumnDefinitions="*,*,*">
+                            <!-- 第 1 格：关闭 -->
+                            <Border x:Name="PART_Slot0"
+                                    Grid.Column="0"
+                                    Background="Transparent"
+                                    ToolTip.Tip="关闭所有自动化功能"
+                                    ToolTip.ShowDelay="300"
+                                    Cursor="Hand">
+                                <TextBlock x:Name="PART_Text0"
+                                           Text="关闭"
+                                           FontSize="12"
+                                           FontWeight="Medium"
+                                           Foreground="{DynamicResource SegmentedInactiveForegroundBrush}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Transitions>
+                                        <Transitions>
+                                            <BrushTransition Property="Foreground"
+                                                             Duration="0:0:0.18"
+                                                             Easing="{StaticResource LinearSilkyEase}" />
+                                        </Transitions>
+                                    </TextBlock.Transitions>
+                                </TextBlock>
+                            </Border>
+
+                            <!-- 第 2 格：自动接受 -->
+                            <Border x:Name="PART_Slot1"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    ToolTip.Tip="匹配成功时自动接受对局"
+                                    ToolTip.ShowDelay="300"
+                                    Cursor="Hand">
+                                <TextBlock x:Name="PART_Text1"
+                                           Text="自动接受"
+                                           FontSize="12"
+                                           FontWeight="Medium"
+                                           Foreground="{DynamicResource SegmentedInactiveForegroundBrush}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Transitions>
+                                        <Transitions>
+                                            <BrushTransition Property="Foreground"
+                                                             Duration="0:0:0.18"
+                                                             Easing="{StaticResource LinearSilkyEase}" />
+                                        </Transitions>
+                                    </TextBlock.Transitions>
+                                </TextBlock>
+                            </Border>
+
+                            <!-- 第 2 格与第 3 格交界处的微型标尺细线（仅在双格连通激活时显现，破除大白板感） -->
+                            <Border x:Name="PART_State2Divider"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Width="1"
+                                    Height="14"
+                                    Opacity="0"
+                                    Background="{DynamicResource SegmentedDividerBrush}">
+                                <Border.Transitions>
+                                    <Transitions>
+                                        <DoubleTransition Property="Opacity"
+                                                          Duration="0:0:0.20"
+                                                          Easing="{StaticResource LinearSilkyEase}" />
+                                    </Transitions>
+                                </Border.Transitions>
+                            </Border>
+
+                            <!-- 第 3 格：自动秒开 -->
+                            <Border x:Name="PART_Slot2"
+                                    Grid.Column="2"
+                                    Background="Transparent"
+                                    ToolTip.Tip="对局结算后自动再来一局并开始寻找对局，且自动接受"
+                                    ToolTip.ShowDelay="300"
+                                    Cursor="Hand">
+                                <TextBlock x:Name="PART_Text2"
+                                           Text="自动秒开"
+                                           FontSize="12"
+                                           FontWeight="Medium"
+                                           Foreground="{DynamicResource SegmentedInactiveForegroundBrush}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Transitions>
+                                        <Transitions>
+                                            <BrushTransition Property="Foreground"
+                                                             Duration="0:0:0.18"
+                                                             Easing="{StaticResource LinearSilkyEase}" />
+                                        </Transitions>
+                                    </TextBlock.Transitions>
+                                </TextBlock>
+                            </Border>
+                        </Grid>
+                    </Panel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- 状态 0: 关闭高亮 -->
+        <Style Selector="^:state0 /template/ TextBlock#PART_Text0">
+            <Setter Property="Foreground" Value="{DynamicResource SegmentedActiveForegroundBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- 状态 1: 自动接受高亮 -->
+        <Style Selector="^:state1 /template/ TextBlock#PART_Text1">
+            <Setter Property="Foreground" Value="{DynamicResource SegmentedActiveForegroundBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- 状态 2: 自动接受 + 自动秒开 双格同时高亮，并点亮中间分割细线 -->
+        <Style Selector="^:state2 /template/ TextBlock#PART_Text1">
+            <Setter Property="Foreground" Value="{DynamicResource SegmentedActiveForegroundBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="^:state2 /template/ TextBlock#PART_Text2">
+            <Setter Property="Foreground" Value="{DynamicResource SegmentedActiveForegroundBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="^:state2 /template/ Border#PART_State2Divider">
+            <Setter Property="Opacity" Value="0.85" />
+        </Style>
+
+        <!-- 未选中项的悬停微光反馈 -->
+        <Style Selector="^:not(:state0) /template/ Border#PART_Slot0:pointerover TextBlock#PART_Text0">
+            <Setter Property="Foreground" Value="{DynamicResource SegmentedInactiveHoverForegroundBrush}" />
+        </Style>
+        <Style Selector="^:not(:state1):not(:state2) /template/ Border#PART_Slot1:pointerover TextBlock#PART_Text1">
+            <Setter Property="Foreground" Value="{DynamicResource SegmentedInactiveHoverForegroundBrush}" />
+        </Style>
+        <Style Selector="^:not(:state2) /template/ Border#PART_Slot2:pointerover TextBlock#PART_Text2">
+            <Setter Property="Foreground" Value="{DynamicResource SegmentedInactiveHoverForegroundBrush}" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

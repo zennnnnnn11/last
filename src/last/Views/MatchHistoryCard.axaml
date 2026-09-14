@@ -1,0 +1,433 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:last.ViewModels"
+             xmlns:v="using:last.Views"
+             x:Class="last.Views.MatchHistoryCard"
+             x:DataType="vm:MatchHistoryCardViewModel">
+
+    <UserControl.Styles>
+        <!-- 模式筛选微胶囊按钮 -->
+        <Style Selector="Button.FilterPillBtn">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSubtleBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="Margin" Value="4,0,0,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.FilterPillBtn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource CardHoverBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardHoverBorderBrush}" />
+        </Style>
+
+        <!-- 返回我的战绩快捷微胶囊按钮 -->
+        <Style Selector="Button.BackToMeBtn">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSubtleBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="5,2" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.BackToMeBtn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource CardHoverBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardHoverBorderBrush}" />
+        </Style>
+
+        <!-- 极简刷新按钮 -->
+        <Style Selector="Button.RefreshBtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Margin" Value="4,0,0,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Background="{TemplateBinding Background}"
+                                      Padding="{TemplateBinding Padding}"
+                                      Content="{TemplateBinding Content}" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.RefreshBtn:pointerover">
+            <Setter Property="Opacity" Value="0.68" />
+        </Style>
+
+        <!-- 战绩虚拟化列表极简无痕样式（消除默认边框、内边距与选中蓝底，由 MatchHistoryItemView 自行管理悬浮动效） -->
+        <Style Selector="ListBox.MatchHistoryList">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0, 0, 2, 0" />
+        </Style>
+        <Style Selector="ListBox.MatchHistoryList ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Background="Transparent"
+                                      BorderBrush="Transparent"
+                                      BorderThickness="0"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Content="{TemplateBinding Content}"
+                                      Padding="0"
+                                      VerticalContentAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style
+            Selector="ListBox.MatchHistoryList ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style
+            Selector="ListBox.MatchHistoryList ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Linear 浅色白瓷卡片容器 (自适应填充 MainWindow 底部) -->
+    <Border Classes="Card" Padding="10,10,10,10">
+        <Grid RowDefinitions="Auto, *">
+
+            <!-- ════════════════════ 顶部 Header：标题 + 模式筛选 + 胜率徽标 + 刷新 ════════════════════ -->
+            <Grid Grid.Row="0"
+                  ColumnDefinitions="Auto, *, Auto"
+                  VerticalAlignment="Center"
+                  Margin="0,0,0,8">
+
+                <!-- 左：标题、阵营徽标与模式切换胶囊 -->
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            Spacing="5"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="{Binding HeaderTitleText}"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               MaxWidth="115"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" />
+
+                    <!-- 友方微标 (仅在查看队友时呈现) -->
+                    <Border Background="{DynamicResource TeamAllyBgBrush}"
+                            BorderBrush="{DynamicResource TeamAllyBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="3"
+                            Padding="3.5, 0.5"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding IsInspectingAlly}">
+                        <TextBlock Text="友方"
+                                   FontSize="8"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TeamAllyAccentBrush}"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <!-- 敌方微标 (仅在查看对手时呈现) -->
+                    <Border Background="{DynamicResource TeamEnemyBgBrush}"
+                            BorderBrush="{DynamicResource TeamEnemyBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="3"
+                            Padding="3.5, 0.5"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding IsInspectingEnemy}">
+                        <TextBlock Text="敌方"
+                                   FontSize="8"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TeamEnemyAccentBrush}"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <!-- 模式筛选胶囊按钮 (点击弹出模式切换菜单) -->
+                    <Button Classes="FilterPillBtn"
+                            ToolTip.Tip="点击切换游戏模式">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <MenuItem Command="{Binding SelectFilterCommand}"
+                                          CommandParameter="{Binding FilterOptions[0]}">
+                                    <MenuItem.Header>
+                                        <Grid ColumnDefinitions="*, Auto" Width="108">
+                                            <TextBlock Grid.Column="0" Text="全部模式"
+                                                       FontSize="11.5"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="✓"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource TeamAllyAccentBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsFilterAllSelected}" />
+                                        </Grid>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SelectFilterCommand}"
+                                          CommandParameter="{Binding FilterOptions[1]}">
+                                    <MenuItem.Header>
+                                        <Grid ColumnDefinitions="*, Auto" Width="108">
+                                            <TextBlock Grid.Column="0" Text="单双排位"
+                                                       FontSize="11.5"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="✓"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource TeamAllyAccentBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsFilterRankedSoloSelected}" />
+                                        </Grid>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SelectFilterCommand}"
+                                          CommandParameter="{Binding FilterOptions[2]}">
+                                    <MenuItem.Header>
+                                        <Grid ColumnDefinitions="*, Auto" Width="108">
+                                            <TextBlock Grid.Column="0" Text="灵活排位"
+                                                       FontSize="11.5"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="✓"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource TeamAllyAccentBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsFilterRankedFlexSelected}" />
+                                        </Grid>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SelectFilterCommand}"
+                                          CommandParameter="{Binding FilterOptions[3]}">
+                                    <MenuItem.Header>
+                                        <Grid ColumnDefinitions="*, Auto" Width="108">
+                                            <TextBlock Grid.Column="0" Text="匹配模式"
+                                                       FontSize="11.5"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="✓"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource TeamAllyAccentBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsFilterNormalSelected}" />
+                                        </Grid>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SelectFilterCommand}"
+                                          CommandParameter="{Binding FilterOptions[4]}">
+                                    <MenuItem.Header>
+                                        <Grid ColumnDefinitions="*, Auto" Width="108">
+                                            <TextBlock Grid.Column="0" Text="海克斯大乱斗"
+                                                       FontSize="11.5"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="✓"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource TeamAllyAccentBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsFilterAramSelected}" />
+                                        </Grid>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SelectFilterCommand}"
+                                          CommandParameter="{Binding FilterOptions[5]}">
+                                    <MenuItem.Header>
+                                        <Grid ColumnDefinitions="*, Auto" Width="108">
+                                            <TextBlock Grid.Column="0" Text="斗魂竞技场"
+                                                       FontSize="11.5"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="✓"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource TeamAllyAccentBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsFilterArenaSelected}" />
+                                        </Grid>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SelectFilterCommand}"
+                                          CommandParameter="{Binding FilterOptions[6]}">
+                                    <MenuItem.Header>
+                                        <Grid ColumnDefinitions="*, Auto" Width="108">
+                                            <TextBlock Grid.Column="0" Text="轮换模式"
+                                                       FontSize="11.5"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="✓"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource TeamAllyAccentBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsFilterSpecialSelected}" />
+                                        </Grid>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                            </MenuFlyout>
+                        </Button.Flyout>
+
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding SelectedFilter.DisplayName}"
+                                       FontSize="10.5"
+                                       FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="▾"
+                                       FontSize="9"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,1,0,0" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- 右：返回我的战绩微胶囊 + 近期场次胜率统计胶囊 + 刷新按钮 -->
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            Spacing="4"
+                            VerticalAlignment="Center">
+
+                    <!-- 返回我的战绩快捷微胶囊 (仅在查看他人时呈现) -->
+                    <Button Classes="BackToMeBtn"
+                            Command="{Binding ResetToLocalPlayerCommand}"
+                            ToolTip.Tip="切回查看我的战绩"
+                            IsVisible="{Binding IsInspectingOtherPlayer}"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                            <TextBlock Text="我的"
+                                       FontSize="10"
+                                       FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="✕"
+                                       FontSize="8"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Border Background="{DynamicResource SurfaceSubtleBrush}"
+                            BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="6,2"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SummaryStatText}"
+                                   FontSize="10.5"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <!-- 刷新小按钮 -->
+                    <Button Classes="RefreshBtn"
+                            Command="{Binding RefreshCommand}"
+                            ToolTip.Tip="重新拉取战绩"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="↻"
+                                   FontSize="13"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ════════════════════ 内容区：真实虚拟化丝滑滚动战绩列表 ════════════════════ -->
+            <Panel Grid.Row="1">
+                <!-- 1. 有对局数据时的真实虚拟化滚动列表 (ListBox 官方真虚拟化 + 手势惯性 + 鼠标滚轮阻尼插值 + 触底加载) -->
+                <ListBox x:Name="MatchListBox"
+                         Classes="MatchHistoryList"
+                         ItemsSource="{Binding Matches}"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.IsScrollInertiaEnabled="True"
+                         SelectionMode="Single"
+                         TextOptions.BaselinePixelAlignment="Unaligned"
+                         IsVisible="{Binding HasMatches}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MatchHistoryItemViewModel">
+                            <v:MatchHistoryItemView />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- 触底加载微胶囊指示器 (优雅悬浮在战绩卡片底部) -->
+                <Border IsVisible="{Binding IsLoadingMore}"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Center"
+                        Margin="0, 0, 0, 8"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="10, 4"
+                        BoxShadow="{DynamicResource CardHoverBoxShadow}">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <PathIcon Data="{StaticResource IconRefresh}"
+                                  Width="10" Height="10"
+                                  Foreground="{DynamicResource BrandPrimaryBrush}"
+                                  VerticalAlignment="Center" />
+                        <TextBlock Text="正在加载更早对局..."
+                                   FontSize="10"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 2. 无对局数据时的极简优雅空态 -->
+                <Grid IsVisible="{Binding !HasMatches}"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
+                        <Border Width="22" Height="22"
+                                CornerRadius="11"
+                                Background="{DynamicResource SurfaceSubtleBrush}"
+                                BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                BorderThickness="1"
+                                HorizontalAlignment="Center">
+                            <Border Width="6" Height="6"
+                                    CornerRadius="3"
+                                    Background="{DynamicResource AvatarPlaceholderBrush}"
+                                    Opacity="0.6"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="{Binding EmptyText}"
+                                   FontSize="11.5"
+                                   FontWeight="Medium"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </Panel>
+        </Grid>
+    </Border>
+</UserControl>

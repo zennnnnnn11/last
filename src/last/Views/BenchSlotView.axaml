@@ -1,0 +1,202 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:last.ViewModels"
+             x:Class="last.Views.BenchSlotView"
+             x:DataType="vm:BenchChampionSlotViewModel"
+             Width="48" Height="48">
+
+    <UserControl.Styles>
+        <!-- 移除 Button 原生控件的所有臃肿背景与边框，消除默认 FocusAdorner 与焦点框 -->
+        <Style Selector="Button.BenchSlotBtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="FocusAdorner" Value="{x:Null}" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <!-- 常态基准：平整静止态与底蕴微阴影 -->
+        <Style Selector="Border.SlotFrame">
+            <Setter Property="RenderTransform" Value="none" />
+            <Setter Property="BoxShadow" Value="0 1 2 0 #08000000" />
+        </Style>
+
+        <!-- 鼠标悬浮时高亮边框、轻柔微浮起 1.2px、微放大 1.8% 并散开漫反射柔和微光晕（仅当有英雄时） -->
+        <Style Selector="Button.BenchSlotBtn:pointerover Border.SlotFrame">
+            <Setter Property="BorderBrush" Value="{DynamicResource BenchSlotHoverBorderBrush}" />
+            <Setter Property="RenderTransform" Value="translateY(-1.2px) scale(1.018)" />
+            <Setter Property="BoxShadow" Value="0 6 14 0 #22000000, 0 2 4 0 #0E000000" />
+        </Style>
+
+        <!-- 鼠标按下时的即时轻微回弹反馈 -->
+        <Style Selector="Button.BenchSlotBtn:pressed Border.SlotFrame">
+            <Setter Property="RenderTransform" Value="scale(0.96)" />
+            <Setter Property="BoxShadow" Value="0 1 2 0 #0A000000" />
+        </Style>
+    </UserControl.Styles>
+
+    <Button Classes="BenchSlotBtn"
+            Command="{Binding SwapCommand}"
+            IsEnabled="{Binding HasChampion}"
+            ToolTip.Placement="Bottom"
+            ToolTip.VerticalOffset="6"
+            ToolTip.ShowDelay="120"
+            Width="48" Height="48"
+            Cursor="Hand">
+
+        <!-- Linear 风格精细化 ToolTip 弹窗卡片 -->
+        <ToolTip.Tip>
+            <StackPanel Spacing="6" Width="154" IsVisible="{Binding HasChampion}">
+                <!-- 头部：英雄名称与职业徽标（法师、刺客、战士、射手、坦克、辅助） -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding ChampionName}"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+
+                    <!-- 职业微型胶囊 -->
+                    <Border Grid.Column="1"
+                            CornerRadius="3"
+                            Padding="5,1"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource SurfaceSubtleBrush}"
+                            BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                            BorderThickness="1"
+                            Margin="6,0,0,0"
+                            IsVisible="{Binding HasRole}">
+                        <TextBlock Text="{Binding ChampionRole}"
+                                   FontSize="9.5"
+                                   FontWeight="Medium"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                    </Border>
+                </Grid>
+
+                <!-- 分割线 -->
+                <Border Height="1" Background="{DynamicResource SurfaceStrokeBrush}" />
+
+                <!-- 中部：大乱斗平衡性调整明细列表 (Key - Value) -->
+                <Panel>
+                    <!-- 有平衡性调整项 -->
+                    <ItemsControl ItemsSource="{Binding BalanceAdjustments}"
+                                  IsVisible="{Binding HasBalance}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:BenchBalanceAdjustmentItem">
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding DisplayName}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <!-- 增益数值 (绿) -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding FormattedValue}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource BenchBuffBrush}"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding IsBuff}" />
+                                    <!-- 削弱数值 (红) -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding FormattedValue}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource BenchNerfBrush}"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding IsNerf}" />
+                                    <!-- 中性数值 -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding FormattedValue}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding IsNeutral}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- 无平衡调整时 -->
+                    <TextBlock Text="标准数值，无模式修正"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               IsVisible="{Binding !HasBalance}"
+                               Margin="0,2" />
+                </Panel>
+            </StackPanel>
+        </ToolTip.Tip>
+
+        <!-- 槽位框架 (48×48, 8px 圆角, 1px 托盘微留白 Padding) -->
+        <Border Classes="SlotFrame"
+                Width="48" Height="48"
+                CornerRadius="8"
+                Padding="1"
+                Background="{DynamicResource BenchSlotBgBrush}"
+                BorderBrush="{DynamicResource BenchSlotBorderBrush}"
+                BorderThickness="1">
+            <Border.Transitions>
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.24"
+                                                   Easing="{StaticResource FluentEase}" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.24" Easing="{StaticResource FluentEase}" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.24" Easing="{StaticResource FluentEase}" />
+                </Transitions>
+            </Border.Transitions>
+
+            <Panel>
+                <!-- ═════════ 状态 A：空槽位占位（虚化微底纹） ═════════ -->
+                <Panel IsVisible="{Binding !HasChampion}">
+                    <Border Width="6" Height="6"
+                            CornerRadius="3"
+                            Background="{DynamicResource AvatarPlaceholderBrush}"
+                            Opacity="0.45"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
+                </Panel>
+
+                <!-- ═════════ 状态 B：激活的英雄头像与状态标 ═════════ -->
+                <Panel IsVisible="{Binding HasChampion}">
+                    <!-- 头像微内嵌容器 (同心圆角 6px，裁切缩放原画) -->
+                    <Border CornerRadius="6"
+                            ClipToBounds="True">
+                        <Panel>
+                            <!-- 英雄头像：缩放 1.09 并裁切，彻底消除 Riot 官方原图自带的 2px 黑色复古老边框 -->
+                            <Image Source="{Binding IconBitmap}"
+                                   Stretch="UniformToFill"
+                                   RenderTransform="scale(1.09)"
+                                   RenderTransformOrigin="50%,50%" />
+
+                            <!-- 4% 微透光柔光收边发丝线（消除原画直接硬切感） -->
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource BenchAvatarHairlineBrush}"
+                                    CornerRadius="6" />
+
+                            <!-- 左上角：优先独占锁保护指示点 (Amber) -->
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Top"
+                                    Margin="3,3,0,0"
+                                    Width="6" Height="6"
+                                    CornerRadius="3"
+                                    Background="{DynamicResource BenchPriorityBrush}"
+                                    BoxShadow="0 0 4 0 #80F59E0B"
+                                    IsVisible="{Binding IsPriority}" />
+
+                            <!-- 秒抢操作中的微半透明遮罩 -->
+                            <Border Background="#50000000"
+                                    CornerRadius="6"
+                                    IsVisible="{Binding IsSwapping}" />
+                        </Panel>
+                    </Border>
+                </Panel>
+            </Panel>
+        </Border>
+    </Button>
+</UserControl>

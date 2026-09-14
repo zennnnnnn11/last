@@ -1,0 +1,222 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="320"
+        d:DesignHeight="186"
+        x:Class="last.Views.ConfirmExitDialog"
+        Title="退出 last"
+        Width="320"
+        Height="186"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        WindowDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        TransparencyLevelHint="Mica, AcrylicBlur"
+        TransparencyBackgroundFallback="{DynamicResource SystemRegionBrush}"
+        Background="Transparent"
+        Win32Properties.WindowCornerPreference="Round">
+
+    <Window.Styles>
+        <!-- 弹窗取消按钮（Linear 极简次级按钮风格） -->
+        <Style Selector="Button.LinearCancelBtn">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSubtleBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,5" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.LinearCancelBtn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceStrokeBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardHoverBorderBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+
+        <!-- 弹窗确认退出按钮（Linear 标志性警示/危险操作红按钮风格） -->
+        <Style Selector="Button.LinearDangerBtn">
+            <Setter Property="Background" Value="#DC2626" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="14,5" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.LinearDangerBtn:pointerover">
+            <Setter Property="Background" Value="#EF4444" />
+        </Style>
+        <Style Selector="Button.LinearDangerBtn:pressed">
+            <Setter Property="Background" Value="#B91C1C" />
+        </Style>
+
+        <!-- 弹窗顶部右上角微型关闭叉号 -->
+        <Style Selector="Button.LinearDialogCloseBtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.LinearDialogCloseBtn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceStrokeBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <!-- Linear 悬浮卡片容器 -->
+    <Border Background="{DynamicResource CardBackgroundBrush}"
+            BorderBrush="{DynamicResource CardBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            BoxShadow="0 16 48 0 #80000000"
+            Padding="18,16,18,16">
+        <Grid RowDefinitions="Auto, *, Auto">
+            <!-- 头部：标志徽章、标题与右上角关闭（支持窗口拖拽） -->
+            <Grid Grid.Row="0"
+                  ColumnDefinitions="Auto, *, Auto"
+                  Background="Transparent"
+                  WindowDecorationProperties.ElementRole="TitleBar">
+                <Border Grid.Column="0"
+                        Width="28"
+                        Height="28"
+                        CornerRadius="6"
+                        Background="#1DEF4444"
+                        BorderBrush="#33EF4444"
+                        BorderThickness="1"
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center">
+                    <Path Data="M12 3v9M18.36 6.64a9 9 0 1 1-12.73 0"
+                          Stroke="#EF4444"
+                          StrokeThickness="2"
+                          StrokeLineCap="Round"
+                          StrokeJoin="Round"
+                          Width="13"
+                          Height="13"
+                          Stretch="Uniform"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="退出 last"
+                               FontSize="13.5"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                </StackPanel>
+
+                <Button Grid.Column="2"
+                        Classes="LinearDialogCloseBtn"
+                        Click="OnCancelClick"
+                        WindowDecorationProperties.ElementRole="User"
+                        ToolTip.Tip="取消">
+                    <TextBlock Text="✕" FontSize="11" FontWeight="Medium" />
+                </Button>
+            </Grid>
+
+            <!-- 主体描述内容 -->
+            <TextBlock Grid.Row="1"
+                       Text="确定要关闭并退出软件吗？退出后将停止英雄联盟对局监听与后台自动化辅助。"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap"
+                       LineHeight="18"
+                       Margin="0,14,0,16"
+                       VerticalAlignment="Center" />
+
+            <!-- 底部操作按钮 -->
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                <Button Classes="LinearCancelBtn"
+                        IsCancel="True"
+                        Click="OnCancelClick">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="取消" VerticalAlignment="Center" />
+                        <Border Background="{DynamicResource SurfaceStrokeBrush}"
+                                CornerRadius="3"
+                                Padding="4,1"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="Esc"
+                                       FontSize="9.5"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                        </Border>
+                    </StackPanel>
+                </Button>
+
+                <Button Classes="LinearDangerBtn"
+                        IsDefault="True"
+                        Click="OnConfirmClick">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="退出软件" VerticalAlignment="Center" />
+                        <Border Background="#25FFFFFF"
+                                CornerRadius="3"
+                                Padding="4,1"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="↵"
+                                       FontSize="10"
+                                       Foreground="#E2E8F0" />
+                        </Border>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

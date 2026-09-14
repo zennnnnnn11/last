@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:last.ViewModels"
+             xmlns:v="using:last.Views"
+             x:Class="last.Views.TeammateCard"
+             x:DataType="vm:TeammateCardViewModel"
+             Height="154">
+
+    <!-- Linear 浅色白瓷卡片容器（154px 高度，己方 5 人纵向通栏阵列） -->
+    <Border Classes="Card" Padding="14,12,14,12">
+        <Grid RowDefinitions="20, 4, 106">
+
+            <!-- 顶部标题行 (20px)：队伍标识 + 阵营蓝点 + 状态徽标 -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                <!-- 左：己方标识与阵营微发光圆点 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border Width="6" Height="6"
+                            CornerRadius="3"
+                            Background="{DynamicResource TeamAllyAccentBrush}"
+                            BoxShadow="0 0 6 0 #803B82F6"
+                            VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding HeaderTitle}"
+                               FontSize="12.5"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- 右：队伍状态微标 -->
+                <Border Grid.Column="2"
+                        Background="{DynamicResource SurfaceSubtleBrush}"
+                        BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="6,1"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="{Binding StatusText}"
+                               FontSize="10.5"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+
+            <!-- ═══════════════ 内容区 (106px)：选人/对局中呈现 5 行通栏列表 ═══════════════ -->
+            <ItemsControl Grid.Row="2"
+                          ItemsSource="{Binding AllyRows}"
+                          IsVisible="{Binding IsInMatchOrSelect}"
+                          VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" Spacing="2" VerticalAlignment="Center" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PlayerRowViewModel">
+                        <v:PlayerRowView />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- ═══════════════ 内容区 (106px)：空闲/未入局时的极简优雅空态 ═══════════════ -->
+            <Grid Grid.Row="2"
+                  IsVisible="{Binding !IsInMatchOrSelect}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
+                    <Border Width="22" Height="22"
+                            CornerRadius="11"
+                            Background="{DynamicResource SurfaceSubtleBrush}"
+                            BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                            BorderThickness="1"
+                            HorizontalAlignment="Center">
+                        <Border Width="6" Height="6"
+                                CornerRadius="3"
+                                Background="{DynamicResource AvatarPlaceholderBrush}"
+                                Opacity="0.6"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="等待进入英雄选择"
+                               FontSize="11.5"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="对局就绪后将在此呈现我方 5 位队友全量数据"
+                               FontSize="10"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

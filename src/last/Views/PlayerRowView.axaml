@@ -1,0 +1,281 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:last.ViewModels"
+             x:Class="last.Views.PlayerRowView"
+             x:DataType="vm:PlayerRowViewModel"
+             Height="20"
+             HorizontalAlignment="Stretch">
+
+    <UserControl.Styles>
+        <!-- 行级平整静止态与微圆角 -->
+        <Style Selector="Border.PlayerRowFrame">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="4, 0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
+        <!-- 鼠标悬浮整行时：呈现温润淡雅的瓷白浅灰背景过渡，无生硬外框 -->
+        <Style Selector="Border.PlayerRowFrame:pointerover">
+            <Setter Property="Background" Value="{DynamicResource PlayerRowHoverBgBrush}" />
+        </Style>
+
+        <!-- 友方选中高亮态：微透光淡蓝底与精致微边框 -->
+        <Style Selector="Border.PlayerRowFrame.Selected">
+            <Setter Property="Background" Value="{DynamicResource TeamAllyBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource TeamAllyBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <!-- 敌方选中高亮态：微透光淡红底与精致微边框 -->
+        <Style Selector="Border.PlayerRowFrame.SelectedEnemy">
+            <Setter Property="Background" Value="{DynamicResource TeamEnemyBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource TeamEnemyBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border Classes="PlayerRowFrame"
+            Classes.Selected="{Binding IsAllySelected}"
+            Classes.SelectedEnemy="{Binding IsEnemySelected}"
+            IsVisible="{Binding IsActive}"
+            Height="20"
+            Tapped="OnRowTapped"
+            HorizontalAlignment="Stretch">
+        <Border.Transitions>
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.18" Easing="{StaticResource FluentEase}" />
+            </Transitions>
+        </Border.Transitions>
+
+        <!-- 横向通栏三段排布：头像(20px) -> 双技能(34px) -> 弹性昵称(*) -> 5 连微点(40px) -->
+        <Grid ColumnDefinitions="Auto, 6, Auto, 8, *, 8, Auto"
+              VerticalAlignment="Center">
+
+            <!-- ═══════════════ 1. 英雄肖像 (20×20 px，4.5px 优雅圆角) ═══════════════ -->
+            <Border Grid.Column="0"
+                    Width="20" Height="20"
+                    CornerRadius="4.5"
+                    ClipToBounds="True"
+                    Background="{DynamicResource BenchSlotBgBrush}"
+                    BorderBrush="{DynamicResource BenchSlotBorderBrush}"
+                    BorderThickness="1"
+                    VerticalAlignment="Center"
+                    ToolTip.Placement="Bottom"
+                    ToolTip.VerticalOffset="4"
+                    ToolTip.ShowDelay="150">
+
+                <ToolTip.Tip>
+                    <StackPanel Spacing="6" Width="154" IsVisible="{Binding HasChampion}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding ChampionName}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <Border Grid.Column="1"
+                                    CornerRadius="3"
+                                    Padding="5,1"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource SurfaceSubtleBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                    BorderThickness="1"
+                                    Margin="6,0,0,0"
+                                    IsVisible="{Binding HasRole}">
+                                <TextBlock Text="{Binding ChampionRole}"
+                                           FontSize="9.5"
+                                           FontWeight="Medium"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </Border>
+                        </Grid>
+                        <Border Height="1" Background="{DynamicResource SurfaceStrokeBrush}" />
+                        <Panel>
+                            <ItemsControl ItemsSource="{Binding BalanceAdjustments}"
+                                          IsVisible="{Binding HasBalance}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:BenchBalanceAdjustmentItem">
+                                        <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding DisplayName}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding FormattedValue}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource BenchBuffBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsBuff}" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding FormattedValue}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource BenchNerfBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsNerf}" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding FormattedValue}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsNeutral}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="标准数值，无模式修正"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                       IsVisible="{Binding !HasBalance}"
+                                       Margin="0,2" />
+                        </Panel>
+                    </StackPanel>
+                </ToolTip.Tip>
+
+                <Panel>
+                    <!-- 未选定英雄时的纯净浅灰微底色 -->
+                    <Border Background="{DynamicResource AvatarPlaceholderBrush}"
+                            Opacity="0.25"
+                            IsVisible="{Binding !HasChampion}" />
+
+                    <!-- 英雄原画：1.09x 裁切消除暗边 -->
+                    <Panel IsVisible="{Binding HasChampion}">
+                        <Image Source="{Binding ChampionAvatar}"
+                               Stretch="UniformToFill"
+                               RenderTransform="scale(1.09)"
+                               RenderTransformOrigin="50%,50%" />
+                        <Border BorderThickness="1"
+                                BorderBrush="{DynamicResource BenchAvatarHairlineBrush}"
+                                CornerRadius="4.5" />
+                    </Panel>
+                </Panel>
+            </Border>
+
+            <!-- ═══════════════ 2. 双召唤师技能 (两个 16×16 px 横排并列) ═══════════════ -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        Spacing="2"
+                        VerticalAlignment="Center">
+                <!-- 技能 1 (D) -->
+                <Border Width="16" Height="16"
+                        CornerRadius="3.5"
+                        ClipToBounds="True"
+                        Background="{DynamicResource BenchSlotBgBrush}"
+                        BorderBrush="{DynamicResource BenchSlotBorderBrush}"
+                        BorderThickness="1"
+                        ToolTip.Tip="{Binding Spell1Name}"
+                        ToolTip.Placement="Top"
+                        ToolTip.ShowDelay="150"
+                        VerticalAlignment="Center">
+                    <Panel>
+                        <Image Source="{Binding Spell1Icon}"
+                               Stretch="UniformToFill"
+                               IsVisible="{Binding HasSpell1}" />
+                        <Border Background="{DynamicResource AvatarPlaceholderBrush}"
+                                Opacity="0.2"
+                                IsVisible="{Binding !HasSpell1}" />
+                    </Panel>
+                </Border>
+
+                <!-- 技能 2 (F) -->
+                <Border Width="16" Height="16"
+                        CornerRadius="3.5"
+                        ClipToBounds="True"
+                        Background="{DynamicResource BenchSlotBgBrush}"
+                        BorderBrush="{DynamicResource BenchSlotBorderBrush}"
+                        BorderThickness="1"
+                        ToolTip.Tip="{Binding Spell2Name}"
+                        ToolTip.Placement="Top"
+                        ToolTip.ShowDelay="150"
+                        VerticalAlignment="Center">
+                    <Panel>
+                        <Image Source="{Binding Spell2Icon}"
+                               Stretch="UniformToFill"
+                               IsVisible="{Binding HasSpell2}" />
+                        <Border Background="{DynamicResource AvatarPlaceholderBrush}"
+                                Opacity="0.2"
+                                IsVisible="{Binding !HasSpell2}" />
+                    </Panel>
+                </Border>
+            </StackPanel>
+
+            <!-- ═══════════════ 3. 弹性召唤师昵称与 #Tag (超大空间，绝不截断) ═══════════════ -->
+            <StackPanel Grid.Column="4"
+                        Orientation="Horizontal"
+                        Spacing="4"
+                        VerticalAlignment="Center">
+                <TextBlock Text="{Binding SummonerName}"
+                           FontSize="11.5"
+                           FontWeight="{Binding IsLocalPlayer, Converter={x:Null}}"
+                           FontFamily="{DynamicResource AppFontFamily}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"
+                           MaxWidth="140"
+                           TextTrimming="CharacterEllipsis" />
+
+                <!-- 本人徽标微胶囊 (非生硬外框，仅为精巧微标签) -->
+                <Border Background="{DynamicResource TeamAllyBgBrush}"
+                        BorderBrush="{DynamicResource TeamAllyBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="3, 0"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding IsLocalPlayer}">
+                    <TextBlock Text="ME"
+                               FontSize="8.5"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource TeamAllyAccentBrush}" />
+                </Border>
+            </StackPanel>
+
+            <!-- ═══════════════ 4. 近期走势 5 连微点 (直径 4.5px，间隙 3.5px) ═══════════════ -->
+            <ItemsControl Grid.Column="6"
+                          ItemsSource="{Binding RecentDots}"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Right">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="3.5" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MatchDotViewModel">
+                        <Border Width="4.5" Height="4.5"
+                                CornerRadius="2.25"
+                                ToolTip.Tip="{Binding Tooltip}"
+                                ToolTip.ShowDelay="120"
+                                VerticalAlignment="Center">
+                            <Panel>
+                                <!-- 胜态：翠绿微点 -->
+                                <Border Width="4.5" Height="4.5"
+                                        CornerRadius="2.25"
+                                        Background="{DynamicResource MatchWinDotBrush}"
+                                        BoxShadow="0 0 3 0 #6010B981"
+                                        IsVisible="{Binding IsWin}" />
+
+                                <!-- 负态：赤红微点 -->
+                                <Border Width="4.5" Height="4.5"
+                                        CornerRadius="2.25"
+                                        Background="{DynamicResource MatchLossDotBrush}"
+                                        BoxShadow="0 0 3 0 #60EF4444"
+                                        IsVisible="{Binding IsLoss}" />
+
+                                <!-- 空态：淡中性冷灰微点 (无密集刺眼感) -->
+                                <Border Width="4.5" Height="4.5"
+                                        CornerRadius="2.25"
+                                        Background="{DynamicResource MatchEmptyDotBrush}"
+                                        Opacity="0.4"
+                                        IsVisible="{Binding IsEmpty}" />
+                            </Panel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Border>
+</UserControl>

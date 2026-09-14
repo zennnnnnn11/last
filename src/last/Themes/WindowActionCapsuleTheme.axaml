@@ -1,0 +1,375 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:last.Controls">
+
+    <!-- 柔和物理弹簧（弱阻尼态 ζ≈0.76，轻微自然回弹，无生硬冲击） -->
+    <SpringEasing x:Key="SpringSnapEase" Mass="1.0" Stiffness="110.0" Damping="16.0" />
+
+    <!-- 柔和流体缓动（平稳起步，极致丝滑减速入位） -->
+    <SplineEasing x:Key="EaseSmooth" X1="0.16" Y1="1.0" X2="0.3" Y2="1.0" />
+
+    <!-- 纯原生 Fluent 主题笔刷字典（支持深色/浅色模式与系统强调色，低饱和柔和雾红） -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="CapsuleBackgroundBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="CapsuleButtonHoverBackgroundBrush" Color="#2AFFFFFF" />
+            <SolidColorBrush x:Key="CapsuleIconForegroundBrush" Color="#B8FFFFFF" />
+            <SolidColorBrush x:Key="CapsuleIconHoverForegroundBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="CapsuleAccentBrush" Color="{DynamicResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="CapsuleAccentHoverBrush" Color="{DynamicResource SystemAccentColorLight1}" />
+            <SolidColorBrush x:Key="CapsuleTextOnAccentBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="CapsuleCloseHoverBackgroundBrush" Color="#30E05555" />
+            <SolidColorBrush x:Key="CapsuleCloseHoverForegroundBrush" Color="#FFA2A2" />
+            <SolidColorBrush x:Key="CapsuleFocusBrush" Color="#FFFFFFFF" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="CapsuleBackgroundBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="CapsuleButtonHoverBackgroundBrush" Color="#18000000" />
+            <SolidColorBrush x:Key="CapsuleIconForegroundBrush" Color="#8A000000" />
+            <SolidColorBrush x:Key="CapsuleIconHoverForegroundBrush" Color="#E4000000" />
+            <SolidColorBrush x:Key="CapsuleAccentBrush" Color="{DynamicResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="CapsuleAccentHoverBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+            <SolidColorBrush x:Key="CapsuleTextOnAccentBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="CapsuleCloseHoverBackgroundBrush" Color="#20E05555" />
+            <SolidColorBrush x:Key="CapsuleCloseHoverForegroundBrush" Color="#C93B3B" />
+            <SolidColorBrush x:Key="CapsuleFocusBrush" Color="#000000" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- 基础按钮样式：统一尺寸与焦点属性，圆角 5 与外壳 8 圆角同心对齐（8 - 3 = 5） -->
+    <ControlTheme x:Key="CapsuleButtonBaseTheme" TargetType="Button">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource CapsuleIconForegroundBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Foreground"
+                                 Duration="0:0:0.24"
+                                 Easing="{StaticResource EaseSmooth}" />
+            </Transitions>
+        </Setter>
+
+        <Style Selector="^:focus-visible /template/ Border#PART_FocusRing">
+            <Setter Property="BorderBrush" Value="{DynamicResource CapsuleFocusBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.4" />
+        </Style>
+    </ControlTheme>
+
+    <!-- 置顶切换按钮：继承 CapsuleButtonBaseTheme 基础属性 -->
+    <ControlTheme x:Key="CapsulePinButtonTheme" TargetType="ToggleButton"
+                  BasedOn="{StaticResource CapsuleButtonBaseTheme}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel Width="28" Height="28">
+                    <Border x:Name="PART_ButtonBorder"
+                            Width="28"
+                            Height="28"
+                            CornerRadius="5"
+                            Background="{TemplateBinding Background}"
+                            BoxShadow="0 0 0 0 Transparent"
+                            ClipToBounds="False"
+                            RenderTransformOrigin="50%,50%"
+                            RenderTransform="scale(1)">
+                        <Border.Transitions>
+                            <Transitions>
+                                <TransformOperationsTransition Property="RenderTransform"
+                                                               Duration="0:0:0.24"
+                                                               Easing="{StaticResource SpringSnapEase}" />
+                                <BrushTransition Property="Background"
+                                                 Duration="0:0:0.24"
+                                                 Easing="{StaticResource EaseSmooth}" />
+                                <BoxShadowsTransition Property="BoxShadow"
+                                                      Duration="0:0:0.24"
+                                                      Easing="{StaticResource EaseSmooth}" />
+                            </Transitions>
+                        </Border.Transitions>
+
+                        <Viewbox x:Name="PART_PinViewbox"
+                                 Width="13"
+                                 Height="13"
+                                 RenderTransformOrigin="50%,50%"
+                                 RenderTransform="translate(0px, 0px) rotate(0deg) scale(1)">
+                            <Viewbox.Transitions>
+                                <Transitions>
+                                    <TransformOperationsTransition Property="RenderTransform"
+                                                                   Duration="0:0:0.32"
+                                                                   Easing="{StaticResource SpringSnapEase}" />
+                                </Transitions>
+                            </Viewbox.Transitions>
+                            <Canvas Width="24" Height="24">
+                                <Path Stroke="{TemplateBinding Foreground}"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      StrokeJoin="Round"
+                                      Data="M12 17v5M5 7l14 0M8 7l1-4h6l1 4M7 7l1 8h8l1-8" />
+                            </Canvas>
+                        </Viewbox>
+                    </Border>
+                    <Border x:Name="PART_FocusRing"
+                            CornerRadius="5"
+                            BorderThickness="0"
+                            BorderBrush="Transparent"
+                            IsHitTestVisible="False" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#PART_ButtonBorder">
+            <Setter Property="Background" Value="{DynamicResource CapsuleButtonHoverBackgroundBrush}" />
+            <Setter Property="BoxShadow" Value="0 1 4 0 #12000000" />
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource CapsuleIconHoverForegroundBrush}" />
+        </Style>
+
+        <!-- 悬停动效：温和微提 1px，优雅微倾 10° -->
+        <Style Selector="^:pointerover /template/ Viewbox#PART_PinViewbox">
+            <Setter Property="RenderTransform" Value="translate(0px, -1px) rotate(10deg) scale(1)" />
+        </Style>
+
+        <Style Selector="^:checked /template/ Border#PART_ButtonBorder">
+            <Setter Property="Background" Value="{DynamicResource CapsuleAccentBrush}" />
+            <Setter Property="BoxShadow" Value="0 2 8 0 #30000000" />
+        </Style>
+
+        <Style Selector="^:checked">
+            <Setter Property="Foreground" Value="{DynamicResource CapsuleTextOnAccentBrush}" />
+        </Style>
+
+        <!-- 置顶激活态：顺时针沉稳锁定 30° -->
+        <Style Selector="^:checked /template/ Viewbox#PART_PinViewbox">
+            <Setter Property="RenderTransform" Value="translate(0px, 0px) rotate(30deg) scale(1.04)" />
+        </Style>
+
+        <Style Selector="^:checked:pointerover /template/ Border#PART_ButtonBorder">
+            <Setter Property="Background" Value="{DynamicResource CapsuleAccentHoverBrush}" />
+            <Setter Property="BoxShadow" Value="0 2 10 0 #40000000" />
+        </Style>
+
+        <Style Selector="^:checked:pointerover /template/ Viewbox#PART_PinViewbox">
+            <Setter Property="RenderTransform" Value="translate(0px, -1px) rotate(30deg) scale(1.06)" />
+        </Style>
+
+        <!-- 按压动效：外框统一下陷至 0.90，图标同步轻微回缩 -->
+        <Style Selector="^:pressed /template/ Border#PART_ButtonBorder">
+            <Setter Property="RenderTransform" Value="scale(0.90)" />
+        </Style>
+
+        <Style Selector="^:pressed /template/ Viewbox#PART_PinViewbox">
+            <Setter Property="RenderTransform" Value="translate(0px, 0px) rotate(0deg) scale(0.92)" />
+        </Style>
+
+        <Style Selector="^:checked:pressed /template/ Viewbox#PART_PinViewbox">
+            <Setter Property="RenderTransform" Value="translate(0px, 0px) rotate(30deg) scale(0.96)" />
+        </Style>
+    </ControlTheme>
+
+    <!-- 缩小到托盘按钮：箭头微沉注入托盘底线，悬停从容微沉，按压自然受力 -->
+    <ControlTheme x:Key="CapsuleCollapseButtonTheme" TargetType="Button"
+                  BasedOn="{StaticResource CapsuleButtonBaseTheme}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel Width="28" Height="28">
+                    <Border x:Name="PART_ButtonBorder"
+                            Width="28"
+                            Height="28"
+                            CornerRadius="5"
+                            Background="{TemplateBinding Background}"
+                            BoxShadow="0 0 0 0 Transparent"
+                            ClipToBounds="False"
+                            RenderTransformOrigin="50%,50%"
+                            RenderTransform="scale(1)">
+                        <Border.Transitions>
+                            <Transitions>
+                                <TransformOperationsTransition Property="RenderTransform"
+                                                               Duration="0:0:0.24"
+                                                               Easing="{StaticResource SpringSnapEase}" />
+                                <BrushTransition Property="Background"
+                                                 Duration="0:0:0.24"
+                                                 Easing="{StaticResource EaseSmooth}" />
+                                <BoxShadowsTransition Property="BoxShadow"
+                                                      Duration="0:0:0.24"
+                                                      Easing="{StaticResource EaseSmooth}" />
+                            </Transitions>
+                        </Border.Transitions>
+
+                        <Viewbox x:Name="PART_CollapseViewbox"
+                                 Width="13"
+                                 Height="13"
+                                 RenderTransformOrigin="50%,50%"
+                                 RenderTransform="translate(0px, 0px) scale(1, 1)">
+                            <Viewbox.Transitions>
+                                <Transitions>
+                                    <TransformOperationsTransition Property="RenderTransform"
+                                                                   Duration="0:0:0.32"
+                                                                   Easing="{StaticResource SpringSnapEase}" />
+                                </Transitions>
+                            </Viewbox.Transitions>
+                            <Canvas Width="24" Height="24">
+                                <Path Stroke="{TemplateBinding Foreground}"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      StrokeJoin="Round"
+                                      Data="M12 4v9M8.5 9.5L12 13l3.5-3.5M5 18h14" />
+                            </Canvas>
+                        </Viewbox>
+                    </Border>
+                    <Border x:Name="PART_FocusRing"
+                            CornerRadius="5"
+                            BorderThickness="0"
+                            BorderBrush="Transparent"
+                            IsHitTestVisible="False" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#PART_ButtonBorder">
+            <Setter Property="Background" Value="{DynamicResource CapsuleButtonHoverBackgroundBrush}" />
+            <Setter Property="BoxShadow" Value="0 1 4 0 #12000000" />
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource CapsuleIconHoverForegroundBrush}" />
+        </Style>
+
+        <!-- 悬停动效：托盘箭头温和微沉 1.2px -->
+        <Style Selector="^:pointerover /template/ Viewbox#PART_CollapseViewbox">
+            <Setter Property="RenderTransform" Value="translate(0px, 1.2px) scale(1, 1)" />
+        </Style>
+
+        <!-- 按压动效：外框统一下陷至 0.90，托盘箭头同步轻微受力 -->
+        <Style Selector="^:pressed /template/ Border#PART_ButtonBorder">
+            <Setter Property="RenderTransform" Value="scale(0.90)" />
+        </Style>
+
+        <Style Selector="^:pressed /template/ Viewbox#PART_CollapseViewbox">
+            <Setter Property="RenderTransform" Value="translate(0px, 1.5px) scale(0.90, 0.90)" />
+        </Style>
+    </ControlTheme>
+
+    <!-- 关闭/退出按钮：叉号图形，悬停从容旋转 90° + 透出低饱和柔红，按压统一下陷 -->
+    <ControlTheme x:Key="CapsuleCloseButtonTheme" TargetType="Button"
+                  BasedOn="{StaticResource CapsuleButtonBaseTheme}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel Width="28" Height="28">
+                    <Border x:Name="PART_ButtonBorder"
+                            Width="28"
+                            Height="28"
+                            CornerRadius="5"
+                            Background="{TemplateBinding Background}"
+                            BoxShadow="0 0 0 0 Transparent"
+                            ClipToBounds="False"
+                            RenderTransformOrigin="50%,50%"
+                            RenderTransform="scale(1)">
+                        <Border.Transitions>
+                            <Transitions>
+                                <TransformOperationsTransition Property="RenderTransform"
+                                                               Duration="0:0:0.24"
+                                                               Easing="{StaticResource SpringSnapEase}" />
+                                <BrushTransition Property="Background"
+                                                 Duration="0:0:0.24"
+                                                 Easing="{StaticResource EaseSmooth}" />
+                            </Transitions>
+                        </Border.Transitions>
+
+                        <Viewbox x:Name="PART_CloseViewbox"
+                                 Width="13"
+                                 Height="13"
+                                 RenderTransformOrigin="50%,50%"
+                                 RenderTransform="rotate(0deg) scale(1)">
+                            <Viewbox.Transitions>
+                                <Transitions>
+                                    <TransformOperationsTransition Property="RenderTransform"
+                                                                   Duration="0:0:0.32"
+                                                                   Easing="{StaticResource SpringSnapEase}" />
+                                </Transitions>
+                            </Viewbox.Transitions>
+                            <Canvas Width="24" Height="24">
+                                <Path Stroke="{TemplateBinding Foreground}"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      Data="M7 7 L17 17 M17 7 L7 17" />
+                            </Canvas>
+                        </Viewbox>
+                    </Border>
+                    <Border x:Name="PART_FocusRing"
+                            CornerRadius="5"
+                            BorderThickness="0"
+                            BorderBrush="Transparent"
+                            IsHitTestVisible="False" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- 悬停：低饱和柔红背景与柔红前景色 -->
+        <Style Selector="^:pointerover /template/ Border#PART_ButtonBorder">
+            <Setter Property="Background" Value="{DynamicResource CapsuleCloseHoverBackgroundBrush}" />
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource CapsuleCloseHoverForegroundBrush}" />
+        </Style>
+
+        <!-- 悬停：在 0.32s 柔和减速下从容旋转 90° -->
+        <Style Selector="^:pointerover /template/ Viewbox#PART_CloseViewbox">
+            <Setter Property="RenderTransform" Value="rotate(90deg) scale(1)" />
+        </Style>
+
+        <!-- 按压动效：外框统一下陷至 0.90，叉号同步微缩至 0.88 -->
+        <Style Selector="^:pressed /template/ Border#PART_ButtonBorder">
+            <Setter Property="RenderTransform" Value="scale(0.90)" />
+        </Style>
+
+        <Style Selector="^:pressed /template/ Viewbox#PART_CloseViewbox">
+            <Setter Property="RenderTransform" Value="rotate(90deg) scale(0.88)" />
+        </Style>
+    </ControlTheme>
+
+    <!-- 按钮组容器：去外层胶囊底框，保持透明悬浮 -->
+    <ControlTheme x:Key="{x:Type c:WindowActionCapsule}" TargetType="c:WindowActionCapsule">
+        <Setter Property="Height" Value="34" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Height="34"
+                        Background="Transparent"
+                        ClipToBounds="False">
+                    <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                        <ToggleButton x:Name="PART_PinButton"
+                                      Theme="{StaticResource CapsulePinButtonTheme}"
+                                      IsChecked="{TemplateBinding IsPinned, Mode=TwoWay}"
+                                      WindowDecorationProperties.ElementRole="User"
+                                      AutomationProperties.Name="窗口置顶"
+                                      ToolTip.Tip="窗口置顶" />
+
+                        <Button x:Name="PART_CollapseButton"
+                                Theme="{StaticResource CapsuleCollapseButtonTheme}"
+                                WindowDecorationProperties.ElementRole="User"
+                                AutomationProperties.Name="缩小到托盘"
+                                ToolTip.Tip="缩小到托盘" />
+
+                        <Button x:Name="PART_CloseButton"
+                                Theme="{StaticResource CapsuleCloseButtonTheme}"
+                                WindowDecorationProperties.ElementRole="User"
+                                AutomationProperties.Name="关闭软件"
+                                ToolTip.Tip="退出软件" />
+                    </StackPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

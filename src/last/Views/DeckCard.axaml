@@ -1,0 +1,287 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:last.Controls"
+             xmlns:v="using:last.Views"
+             xmlns:vm="using:last.ViewModels"
+             x:Class="last.Views.DeckCard"
+             x:DataType="vm:DeckCardViewModel"
+             Height="154">
+
+    <!-- Linear 浅色白瓷卡片容器（154px 数学精准黄金比例） -->
+    <Border Classes="Card" Padding="14,12,14,12">
+        <Carousel SelectedIndex="{Binding CurrentPageIndex}">
+            <Carousel.PageTransition>
+                <PageSlide Duration="0:0:0.24" Orientation="Horizontal" />
+            </Carousel.PageTransition>
+
+            <Carousel.Items>
+                <!-- ════════════════════ 第一页：玩家身份与自动化开关 ════════════════════ -->
+                <Grid RowDefinitions="40, 14, 34, 14, 14">
+
+                    <!-- 顶部行 (40px)：玩家身份与精密状态徽标 -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                        <!-- 左：召唤师身份信息 (Squircle 9px 现代圆角) -->
+                        <Grid Grid.Column="0" ColumnDefinitions="Auto,*" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <!-- 头像 40×40 紧凑倒角 -->
+                            <Border Grid.Column="0"
+                                    Width="40" Height="40"
+                                    CornerRadius="9"
+                                    ClipToBounds="True"
+                                    Background="{DynamicResource SurfaceSubtleBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <Panel>
+                                    <Image Source="{Binding Profile.AvatarBitmap}"
+                                           Stretch="UniformToFill"
+                                           IsVisible="{Binding Profile.HasAvatar}" />
+                                    <Ellipse Width="12" Height="12"
+                                             Fill="{DynamicResource AvatarPlaceholderBrush}"
+                                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             IsVisible="{Binding !Profile.HasAvatar}" />
+                                </Panel>
+                            </Border>
+
+                            <!-- 名字 + #编号 与 等级标签 -->
+                            <StackPanel Grid.Column="1"
+                                        Margin="10,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Spacing="3">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="{Binding Profile.DisplayName}"
+                                               FontSize="13.5"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               MaxWidth="120"
+                                               TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Profile.TagLine, StringFormat='#{0}'}"
+                                               FontSize="11.5"
+                                               FontWeight="Normal"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               IsVisible="{Binding Profile.HasTagLine}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <!-- 等级微型标签 (Linear 风格纯净徽章) -->
+                                <Border HorizontalAlignment="Left"
+                                        Background="{DynamicResource SurfaceSubtleBrush}"
+                                        BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="5,1">
+                                    <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                        <TextBlock FontSize="10.5"
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                                   Text="{Binding Profile.Level, StringFormat='Lv.{0}'}"
+                                                   IsVisible="{Binding Profile.IsConnected}" />
+                                        <TextBlock Text="离线"
+                                                   FontSize="10.5"
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   IsVisible="{Binding !Profile.IsConnected}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 右：Linear 规范精密状态徽标 -->
+                        <Panel Grid.Column="1" VerticalAlignment="Center">
+                            <!-- 在线/就绪态 (薄荷绿微发光胶囊) -->
+                            <Border CornerRadius="6"
+                                    Padding="7,3"
+                                    Background="{DynamicResource StatusOnlineBgBrush}"
+                                    BorderBrush="{DynamicResource StatusOnlineBorderBrush}"
+                                    BorderThickness="1"
+                                    IsVisible="{Binding IsConnected}">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <Border Width="6" Height="6"
+                                            CornerRadius="3"
+                                            Background="{DynamicResource StatusOnlineDotBrush}"
+                                            BoxShadow="0 0 5 0 #8010B981"
+                                            VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding PhaseText}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource StatusOnlineTextBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 离线/未连接态 (中性冷灰胶囊) -->
+                            <Border CornerRadius="6"
+                                    Padding="7,3"
+                                    Background="{DynamicResource StatusOfflineBgBrush}"
+                                    BorderBrush="{DynamicResource StatusOfflineBorderBrush}"
+                                    BorderThickness="1"
+                                    IsVisible="{Binding !IsConnected}">
+                                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                    <Border Width="6" Height="6"
+                                            CornerRadius="3"
+                                            Background="{DynamicResource StatusOfflineDotBrush}"
+                                            VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding PhaseText}"
+                                               FontSize="11"
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource StatusOfflineTextBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </Panel>
+                    </Grid>
+
+                    <!-- 中部行 (34px)：Linear 慢速丝滑三态开关 -->
+                    <c:SegmentedAutomationSwitch Grid.Row="2"
+                                                 State="{Binding AutomationState}"
+                                                 HorizontalAlignment="Stretch"
+                                                 VerticalAlignment="Center" />
+
+                    <!-- 底部行 (14px)：微型功能标签 -->
+                    <TextBlock Grid.Row="4"
+                               Text="AUTOMATION"
+                               FontSize="9.5"
+                               FontWeight="SemiBold"
+                               LetterSpacing="0.8"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <!-- ════════════════════ 第二页：极地大乱斗 候补英雄 10 槽面板 ════════════════════ -->
+                <Grid RowDefinitions="20, 4, 104">
+                    <!-- 顶部标题行 (20px)：纯净标题 + 数量徽标 -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                        <!-- 左：候补英雄纯净标题（无返回键，纯自动切页） -->
+                        <TextBlock Grid.Column="0"
+                                   Text="候补英雄"
+                                   FontSize="12.5"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+
+                        <!-- 右：数量徽标 10/10（无胶囊切换键） -->
+                        <Border Grid.Column="2"
+                                Background="{DynamicResource SurfaceSubtleBrush}"
+                                BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="6,1"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding BenchCountText}"
+                                       FontSize="10.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+
+                    <!-- 下方网格 (104px)：2 行 × 5 列 = 10 槽位 (48×48 像素精确 1:1 正方形，8px 均匀间距) -->
+                    <Grid Grid.Row="2"
+                          RowDefinitions="48, 8, 48"
+                          ColumnDefinitions="48, 8, 48, 8, 48, 8, 48, 8, 48"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center">
+
+                        <!-- 第一排 5 个槽位 (0~4) -->
+                        <v:BenchSlotView Grid.Row="0" Grid.Column="0" DataContext="{Binding BenchSlots[0]}" />
+                        <v:BenchSlotView Grid.Row="0" Grid.Column="2" DataContext="{Binding BenchSlots[1]}" />
+                        <v:BenchSlotView Grid.Row="0" Grid.Column="4" DataContext="{Binding BenchSlots[2]}" />
+                        <v:BenchSlotView Grid.Row="0" Grid.Column="6" DataContext="{Binding BenchSlots[3]}" />
+                        <v:BenchSlotView Grid.Row="0" Grid.Column="8" DataContext="{Binding BenchSlots[4]}" />
+
+                        <!-- 第二排 5 个槽位 (5~9) -->
+                        <v:BenchSlotView Grid.Row="2" Grid.Column="0" DataContext="{Binding BenchSlots[5]}" />
+                        <v:BenchSlotView Grid.Row="2" Grid.Column="2" DataContext="{Binding BenchSlots[6]}" />
+                        <v:BenchSlotView Grid.Row="2" Grid.Column="4" DataContext="{Binding BenchSlots[7]}" />
+                        <v:BenchSlotView Grid.Row="2" Grid.Column="6" DataContext="{Binding BenchSlots[8]}" />
+                        <v:BenchSlotView Grid.Row="2" Grid.Column="8" DataContext="{Binding BenchSlots[9]}" />
+                    </Grid>
+                </Grid>
+
+                <!-- ════════════════════ 第三页：敌方 5 人阵容纵向通栏展示 ════════════════════ -->
+                <Grid RowDefinitions="20, 4, 104">
+                    <!-- 顶部标题行 (20px)：敌方标识与阵营红点 + 状态徽标 -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                        <!-- 左：敌方阵容标识（无返回键） -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Border Width="6" Height="6"
+                                    CornerRadius="3"
+                                    Background="{DynamicResource TeamEnemyAccentBrush}"
+                                    BoxShadow="0 0 6 0 #80EF4444"
+                                    VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding EnemyHeaderText}"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- 右：状态徽标（无胶囊切换键） -->
+                        <Border Grid.Column="2"
+                                Background="{DynamicResource SurfaceSubtleBrush}"
+                                BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="6,1"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding EnemyStatusText}"
+                                       FontSize="10.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+
+                    <!-- 下方阵列 (104px)：5 行纵向通栏列表 -->
+                    <ItemsControl Grid.Row="2"
+                                  ItemsSource="{Binding EnemyRows}"
+                                  IsVisible="{Binding HasEnemyPlayers}"
+                                  VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Spacing="1" VerticalAlignment="Center" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PlayerRowViewModel">
+                                <v:PlayerRowView />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- 空闲/无敌方数据时的极简空态 -->
+                    <Grid Grid.Row="2"
+                          IsVisible="{Binding !HasEnemyPlayers}"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
+                            <Border Width="22" Height="22"
+                                    CornerRadius="11"
+                                    Background="{DynamicResource SurfaceSubtleBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                    BorderThickness="1"
+                                    HorizontalAlignment="Center">
+                                <Border Width="6" Height="6"
+                                        CornerRadius="3"
+                                        Background="{DynamicResource AvatarPlaceholderBrush}"
+                                        Opacity="0.6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="等待进入对局"
+                                       FontSize="11.5"
+                                       FontWeight="Medium"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="进入对局后将在此呈现敌方 5 人阵容数据"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Carousel.Items>
+        </Carousel>
+    </Border>
+</UserControl>

@@ -1,0 +1,59 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:last.Controls"
+        xmlns:v="using:last.Views"
+        xmlns:vm="using:last.ViewModels"
+        x:Class="last.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="last"
+        Width="360"
+        Height="580"
+        MinWidth="360"
+        MinHeight="580"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        WindowDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        TransparencyLevelHint="Mica, AcrylicBlur"
+        TransparencyBackgroundFallback="{DynamicResource SystemRegionBrush}"
+        Background="Transparent"
+        Win32Properties.WindowCornerPreference="Round">
+
+    <!-- 根面板：顶部为标题栏拖拽区域，支持原生窗口拖拽 -->
+    <Grid RowDefinitions="Auto,Auto,Auto,*"
+          Background="Transparent">
+        <!-- 顶部操作栏区域：标记为 TitleBar，操作系统底层原生支持拖动与双击 -->
+        <Grid Grid.Row="0" Margin="14,0,14,0" Height="40" ColumnDefinitions="*,Auto"
+              Background="Transparent"
+              WindowDecorationProperties.ElementRole="TitleBar">
+
+            <!-- 左：应用名称与品牌标识（纯净留白，支持全栏自由拖拽） -->
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        VerticalAlignment="Center">
+                <TextBlock Text="last"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- 窗口操作按钮：置顶、最小化、关闭（纯透明悬浮，无灰色胶囊底框） -->
+            <c:WindowActionCapsule Grid.Column="1"
+                                   WindowDecorationProperties.ElementRole="User"
+                                   AutomationProperties.Name="窗口操作栏"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center" />
+        </Grid>
+
+        <!-- 卡片 1：牌堆轮播卡 (154px) -->
+        <v:DeckCard Grid.Row="1" Margin="14,0,14,0" DataContext="{Binding DeckCard}" />
+
+        <!-- 卡片 2：己方队友卡 (154px) -->
+        <v:TeammateCard Grid.Row="2" Margin="14,10,14,0" DataContext="{Binding TeammateCard}" />
+
+        <!-- 卡片 3：战绩列表卡 (198px) -->
+        <v:MatchHistoryCard Grid.Row="3" Margin="14,10,14,14" DataContext="{Binding MatchHistoryCard}" />
+    </Grid>
+</Window>

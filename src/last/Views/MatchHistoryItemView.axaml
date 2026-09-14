@@ -1,0 +1,347 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:last.ViewModels"
+             x:Class="last.Views.MatchHistoryItemView"
+             x:DataType="vm:MatchHistoryItemViewModel"
+             Height="52"
+             Margin="0,0,0,4">
+
+    <UserControl.Styles>
+        <Style Selector="Border.MatchItemFrame">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="5, 8, 8, 8" />
+        </Style>
+        <Style Selector="Border.MatchItemFrame:pointerover">
+            <Setter Property="Background" Value="{DynamicResource PlayerRowHoverBgBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border Classes="MatchItemFrame"
+            Height="52"
+            Cursor="Hand"
+            Tapped="OnRowTapped">
+
+        <Border.Transitions>
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.18" Easing="{StaticResource FluentEase}" />
+            </Transitions>
+        </Border.Transitions>
+
+        <!-- 横向通栏严格固定网格流：胜负条(3px) -> 头像(32px) -> KDA/英雄(固定90px) -> 装备(55px) -> 分割线(8px) -> 符文/技能(36px) -> 弹性填充(*) -> 时长/时间(Auto) -->
+        <Grid ColumnDefinitions="3, 5, 32, 6, 90, 6, 55, 8, 36, *, Auto"
+              VerticalAlignment="Center">
+
+            <!-- ═══════════════ 1. 胜负垂直指示条 (宽 3px，高 32px 与头像严格齐平) ═══════════════ -->
+            <Border Grid.Column="0"
+                    Width="3" Height="32"
+                    CornerRadius="1.5"
+                    VerticalAlignment="Center">
+                <Panel>
+                    <!-- 胜利：薄荷绿微发光 -->
+                    <Border Width="3" Height="32"
+                            CornerRadius="1.5"
+                            Background="{DynamicResource MatchWinDotBrush}"
+                            BoxShadow="0 0 5 0 #5010B981"
+                            IsVisible="{Binding IsWin}" />
+
+                    <!-- 失利：冷调珊瑚红微发光 -->
+                    <Border Width="3" Height="32"
+                            CornerRadius="1.5"
+                            Background="{DynamicResource MatchLossDotBrush}"
+                            BoxShadow="0 0 5 0 #50EF4444"
+                            IsVisible="{Binding !IsWin}" />
+                </Panel>
+            </Border>
+
+            <!-- ═══════════════ 2. 英雄圆角头像 (32×32 px，6px 圆角) ═══════════════ -->
+            <Border Grid.Column="2"
+                    Width="32" Height="32"
+                    CornerRadius="6"
+                    ClipToBounds="True"
+                    Background="{DynamicResource BenchSlotBgBrush}"
+                    BorderBrush="{DynamicResource BenchSlotBorderBrush}"
+                    BorderThickness="1"
+                    VerticalAlignment="Center">
+                <Panel>
+                    <Image Source="{Binding ChampionAvatar}"
+                           Stretch="UniformToFill"
+                           RenderTransform="scale(1.09)"
+                           RenderTransformOrigin="50%,50%" />
+                    <Border BorderThickness="1"
+                            BorderBrush="{DynamicResource BenchAvatarHairlineBrush}"
+                            CornerRadius="6" />
+                </Panel>
+            </Border>
+
+            <!-- ═══════════════ 3. KDA 与 英雄名 / 伤害 (固定 90px 宽度，确保所有装备/符文垂直绝对对齐) ═══════════════ -->
+            <Grid Grid.Column="4"
+                  Width="90"
+                  RowDefinitions="Auto, Auto"
+                  VerticalAlignment="Center">
+                <!-- 上行：KDA 数字 (K / D / A，死亡数字标红) -->
+                <StackPanel Grid.Row="0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Kills}"
+                               FontSize="10.5"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="/"
+                               FontSize="10"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               Margin="2.5, 0"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Deaths}"
+                               FontSize="10.5"
+                               FontWeight="SemiBold"
+                               Foreground="#EF4444"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="/"
+                               FontSize="10"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               Margin="2.5, 0"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Assists}"
+                               FontSize="10.5"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- 下行：英雄名 · 伤害 (如 双界灵兔 · 10.3k 伤) -->
+                <StackPanel Grid.Row="1"
+                            Orientation="Horizontal"
+                            Spacing="2.5"
+                            Margin="0, 2, 0, 0"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ChampionName}"
+                               FontSize="9.5"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               MaxWidth="46"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="·"
+                               FontSize="9.5"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               Opacity="0.5"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding DamageText}"
+                               FontSize="9.5"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+
+            <!-- ═══════════════ 4. 2×3 六格装备区 (总宽 55px，高 36px) ═══════════════ -->
+            <ItemsControl Grid.Column="6"
+                          ItemsSource="{Binding EquipmentSlots}"
+                          Width="55" Height="36"
+                          VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="2" Columns="3" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MatchItemSlotViewModel">
+                        <Panel Width="17" Height="17" Margin="0.5">
+                            <!-- 有装备时的槽位 -->
+                            <Border CornerRadius="3"
+                                    ClipToBounds="True"
+                                    Background="{DynamicResource SurfaceSubtleBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                    BorderThickness="1"
+                                    ToolTip.Tip="{Binding ItemName}"
+                                    ToolTip.ShowDelay="150"
+                                    IsVisible="{Binding HasItem}">
+                                <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                            </Border>
+
+                            <!-- 空装备槽：优雅半透明线框，弱化缺牙突兀感 -->
+                            <Border CornerRadius="3"
+                                    Background="{DynamicResource SurfaceSubtleBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                    BorderThickness="1"
+                                    Opacity="0.3"
+                                    IsVisible="{Binding !HasItem}" />
+                        </Panel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- 装备与符文间的微细半透明垂直分隔线 -->
+            <Border Grid.Column="7"
+                    Width="1" Height="20"
+                    Background="{DynamicResource SurfaceStrokeBrush}"
+                    Opacity="0.5"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center" />
+
+            <!-- ═══════════════ 5. 符文 / 技能槽位 (自适应三大形态) ═══════════════ -->
+            <Panel Grid.Column="8"
+                   Height="36"
+                   VerticalAlignment="Center">
+
+                <!-- 形态 A：无海克斯 (常规模式) -> 上下并列 2 召唤师技能 -->
+                <StackPanel Orientation="Vertical"
+                            Spacing="2"
+                            Width="17" Height="36"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding !HasAugments}">
+                    <!-- 技能 1 (D) -->
+                    <Border Width="17" Height="17"
+                            CornerRadius="3"
+                            ClipToBounds="True"
+                            Background="{DynamicResource SurfaceSubtleBrush}"
+                            BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                            BorderThickness="1"
+                            ToolTip.Tip="{Binding Spell1Name}"
+                            ToolTip.ShowDelay="150">
+                        <Panel>
+                            <Image Source="{Binding Spell1Icon}" Stretch="UniformToFill" />
+                            <Border Background="{DynamicResource AvatarPlaceholderBrush}"
+                                    Opacity="0.15"
+                                    IsVisible="{Binding Spell1Icon, Converter={x:Static ObjectConverters.IsNull}}" />
+                        </Panel>
+                    </Border>
+                    <!-- 技能 2 (F) -->
+                    <Border Width="17" Height="17"
+                            CornerRadius="3"
+                            ClipToBounds="True"
+                            Background="{DynamicResource SurfaceSubtleBrush}"
+                            BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                            BorderThickness="1"
+                            ToolTip.Tip="{Binding Spell2Name}"
+                            ToolTip.ShowDelay="150">
+                        <Panel>
+                            <Image Source="{Binding Spell2Icon}" Stretch="UniformToFill" />
+                            <Border Background="{DynamicResource AvatarPlaceholderBrush}"
+                                    Opacity="0.15"
+                                    IsVisible="{Binding Spell2Icon, Converter={x:Static ObjectConverters.IsNull}}" />
+                        </Panel>
+                    </Border>
+                </StackPanel>
+
+                <!-- 形态 B：1 到 4 个海克斯 -> 2 行 × 2 列 矩阵 (36×36px，圆形徽章辨识度) -->
+                <ItemsControl ItemsSource="{Binding AugmentSlots}"
+                              Width="36" Height="36"
+                              VerticalAlignment="Center"
+                              IsVisible="{Binding IsStandardAugments}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="2" Columns="2" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MatchAugmentSlotViewModel">
+                            <Panel Width="17" Height="17" Margin="0.5">
+                                <!-- 真正有强化符文时渲染圆球 -->
+                                <Border CornerRadius="8.5"
+                                        ClipToBounds="True"
+                                        Background="{Binding BackgroundBrush}"
+                                        BorderBrush="{Binding BorderBrush}"
+                                        BorderThickness="1"
+                                        ToolTip.Tip="{Binding Name}"
+                                        ToolTip.ShowDelay="150"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        IsVisible="{Binding HasAugment}">
+                                    <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                </Border>
+
+                                <!-- 空符文槽位：纯透明占位，不画任何深色圆圈，保持界面干净 -->
+                                <Border CornerRadius="8.5"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        IsVisible="{Binding !HasAugment}" />
+                            </Panel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- 形态 C：正好 5 个海克斯 -> 优雅上 3 下 2 居中矩阵 (总宽 55px，高 36px，圆形徽章) -->
+                <StackPanel Orientation="Vertical"
+                            Spacing="2"
+                            Width="55" Height="36"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding IsFiveAugments}">
+                    <!-- 上排 3 个 -->
+                    <ItemsControl ItemsSource="{Binding AugmentsRow1}"
+                                  HorizontalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MatchAugmentSlotViewModel">
+                                <Border Width="17" Height="17"
+                                        CornerRadius="8.5"
+                                        ClipToBounds="True"
+                                        Background="{Binding BackgroundBrush}"
+                                        BorderBrush="{Binding BorderBrush}"
+                                        BorderThickness="1"
+                                        ToolTip.Tip="{Binding Name}"
+                                        ToolTip.ShowDelay="150">
+                                    <Panel>
+                                        <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                    </Panel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- 下排 2 个 (水平居中对齐) -->
+                    <ItemsControl ItemsSource="{Binding AugmentsRow2}"
+                                  HorizontalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MatchAugmentSlotViewModel">
+                                <Border Width="17" Height="17"
+                                        CornerRadius="8.5"
+                                        ClipToBounds="True"
+                                        Background="{Binding BackgroundBrush}"
+                                        BorderBrush="{Binding BorderBrush}"
+                                        BorderThickness="1"
+                                        ToolTip.Tip="{Binding Name}"
+                                        ToolTip.ShowDelay="150">
+                                    <Panel>
+                                        <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                    </Panel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Panel>
+
+            <!-- ═══════════════ 6. 对局时长与相对时间 (右对齐，预留 12px 安全呼吸边距防止碰撞滚动条) ═══════════════ -->
+            <StackPanel Grid.Column="10"
+                        Orientation="Vertical"
+                        Spacing="2"
+                        Margin="0,0,12,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center">
+                <!-- 时长 (如 21:22) -->
+                <TextBlock Text="{Binding DurationText}"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           HorizontalAlignment="Right" />
+
+                <!-- 相对时间 (如 13小时前) -->
+                <TextBlock Text="{Binding TimeAgoText}"
+                           FontSize="9"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           HorizontalAlignment="Right" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
